@@ -24,14 +24,22 @@ $errors = array(
     "20" => '{"codi_error":"usuaris_11","error":"Aquest usuari (email) ja existeix registrat al sistema."}',
     "21" => '{"codi_error":"poblacions_1","error":"Hi ha un error amb el llistat de poblacions. Posi\'s en contacte amb l\'adminisrador.."}',
     "22" => '{"codi_error":"usuaris_12","error":"Només pot donar d\'alta ususaris residuents."}',
-    
-    
-    
-    
-    
-    
-    
-    
+    "23" => '{"codi_error":"login_1","error":"No ha indicat usuari."}',
+    "24" => '{"codi_error":"login_2","error":"No ha indicat paraula clau."}',
+    "25" => '{"codi_error":"login_3","error":"Usuari o paraula clau incorrectes."}',
+    "26" => '{"codi_error":"login_4","error":"No ha indicat token."}',
+    "27" => '{"codi_error":"usuaris_13","error":"No pot eliminar un usuari que no sigui el propi."}',
+    "28" => '{"codi_error":"usuaris_14","error":"Només pot donar d\'alta usuaris adherits."}',
+    "29" => '{"codi_error":"usuaris_15","error":"Aquest usuari administrador no existeix."}',
+    "30" => '{"codi_error":"usuaris_16","error":"Aquest usuari residuent no existeix."}',
+    "31" => '{"codi_error":"usuaris_17","error":"Només pot donar d\'alta usuaris residuents."}',
+    "32" => '{"codi_error":"usuaris_18","error":"Falten paràmetres per poder donar d\'alta un usuari. Recorda que com a mínim ha d\'haver: id, tipus d\'usuari, email, paraula clau, nom, cognom1 i cognom2, carrer, codi postal, població i telèfon."}',
+    "33" => '{"codi_error":"usuaris_19","error":"Aquest usuari treballador no existeix."}',
+    "34" => '{"codi_error":"usuaris_20","error":"Només pot donar d\'alta usuaris treballadors."}',
+    "35" => '{"codi_error":"usuaris_21","error":"Falten paràmetres per poder donar d\'alta un usuari. Recorda que com a mínim ha d\'haver: id, tipus d\'usuari, email, paraula clau, nom, cognom1 i cognom2 i telèfon."}',
+    "36" => '{"codi_error":"usuaris_22","error":"Aquest usuari adherit no existeix."}',                            
+    "37" => '{"codi_error":"usuaris_23","error":"Només pot donar d\'alta usuaris adherits."}',
+    "38" => '{"codi_error":"usuaris_24","error":"Falten paràmetres per poder donar d\'alta un usuari. Recorda que com a mínim ha d\'haver: id, tipus d\'usuari, email, paraula clau, nom, cognom1 i cognom2, telèfon, actiu , carrer, poblacio, codi postal, nom empresa i horari."}',
     
     
     

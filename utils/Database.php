@@ -10,6 +10,31 @@ Class Database{
     }
     
     /*
+     * Mètode per loginarse
+     * @Params: $usuari i $password: Id i password de l'usuari
+    */
+    public function login($usuari,$password){
+        $select = "SELECT id, tipus, email, password, nom, cognom1, cognom2, telefon, actiu FROM usuaris WHERE email = '".$usuari."' AND password = '".$password."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            return array(
+                        "id"=>$rs["id"],
+                        "tipus"=>$rs["tipus"],
+                        "email"=>$rs["email"],
+                        "password"=>$rs["password"],
+                        "nom"=>$rs["nom"],
+                        "cognom1"=>$rs["cognom1"],
+                        "cognom2"=>$rs["cognom2"],
+                        "telefon"=>$rs["telefon"],
+                        "actiu"=>$rs["actiu"]
+                   );
+        }else{
+            return null;
+        }
+    }
+    
+    /*
      * Mètode per recuperar les dades s'un usuari concret.
      * @Params: $idUsuari (integer): Id de l'usuari a buscar. 
     */
@@ -39,22 +64,164 @@ Class Database{
     }
     
     /*
+     * Mètode per veure si existeix un usuari al sistema
+     * @Params: $id (int): identificador de l'usuari
+    */
+    public function existeixUsuariId($id){
+        $select = "SELECT * FROM usuaris WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    /*
+     * Mètode per passar a inactiu si existeix l'usuari al sistema
+     * @Params: $idUsuari (integer): Id de l'usuari a buscar.
+    */
+    public function baixaUsuari($idUsuari){
+        $update = "UPDATE usuaris SET actiu = '0' WHERE id = '".$idUsuari."'";
+        $this->conn->query($update);
+    }
+   
+    
+    /*
      * Mètode per recuperar les poblacions (pot ser filtar pre provincia)
      * @Params: $provincia (opcional).
     */
     public function llistaPoblacions($provincia){
         if(is_null($provincia)){
-            $select = "SELECT id, nom FROM poblacions ORDER BY nom";
+            $select = "SELECT po.id as id, po.nom as nom, po.provincia as id_provincia, ";
+            $select .= "pr.nom as nom_provincia ";
+            $select .= "FROM poblacions po ";
+            $select .= "LEFT JOIN provincies pr ON pr.id = po.provincia ";
+            $select .= "ORDER BY po.nom";
         }else{
-            $select = "SELECT id, nom FROM poblacions WHERE provincia = ".$provincia." ORDER BY nom";   
+            $select = "SELECT po.id as id, po.nom as nom, po.provincia as id_provincia, ";
+            $select .= "pr.nom as nom_provincia ";
+            $select .= "FROM poblacions po ";
+            $select .= "LEFT JOIN provincies pr ON pr.id = po.provincia ";
+            $select .= "WHERE po.provincia = ".$provincia." ";
+            $select .= "ORDER BY po.nom"; 
+        }        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ",";}
+                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","id_provincia":"'.$rs["id_provincia"].'","nom_provincia":"'.$rs["nom_provincia"].'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return null;
         }
+    }
+    
+    /*
+     * Mètode per recuperar els tipus d'usuari existents
+     * @Params: sense.
+    */
+    public function llistatTipusUsuari(){
+        $select = "SELECT id, nom ";
+        $select .= "FROM tipus_usuari ";
+        $select .= "ORDER BY id ASC";
         $r = $this->conn->query($select);
         if($r->num_rows > 0){
-            $json = "{";
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
             while($rs = $r->fetch_assoc()){
-                $json .= '"'.$rs["id"].'":"'.$rs["nom"].'",';
+                $cont++;
+                if($cont!=1){ $json .= ",";}
+                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'"}';
             } 
-            $json .= "}";
+            $json .= ']}';
+            return $json;
+        }else{
+            return null;
+        }
+    }
+    
+    /*
+     * Mètode per recuperar els tipus d'usuari existents
+     * @Params: sense.
+    */
+    public function llistatTipusAdherit(){
+        $select = "SELECT id, nom ";
+        $select .= "FROM tipus_adherit ";
+        $select .= "ORDER BY nom ASC";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ",";}
+                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return null;
+        }
+    }
+    
+    /*
+     * Mètode per recuperar els usuaris
+     * @Params: sense
+    */
+    public function llistatUsuaris($ordre,$filtre,$parametreFiltre){
+        
+        $select = "SELECT id, tipus, email, password, nom, cognom1, cognom2, telefon, actiu FROM usuaris";
+        
+        switch($filtre){
+            case "tipus":
+                if( ($parametreFiltre=="1") || ($parametreFiltre=="2") || ($parametreFiltre=="3") || ($parametreFiltre=="4") ){
+                    $select .= " WHERE tipus = '".$parametreFiltre."'";
+                }
+                break;
+            default:
+                break;
+        }
+        
+        switch($ordre){
+                case "nom":
+                    $select .= " ORDER BY nom ASC";
+                    break;
+                case "cognoms":
+                    $select .= " ORDER BY cognom1 ASC, cognom2 ASC, nom ASC";
+                    break;
+                case "email":
+                    $select .= " ORDER BY email ASC";
+                    break;
+                default:
+                    $select .= " ORDER BY nom ASC";
+                    break;
+        }
+        
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ",";}
+                $json .= '{';
+                $json .= '"id":"'.$rs["id"].'",';
+                $json .= '"tipus":"'.$rs["tipus"].'",';
+                $json .= '"email":"'.$rs["email"].'",';
+                $json .= '"password":"'.$rs["password"].'",';
+                $json .= '"nom":"'.$rs["nom"].'",';
+                $json .= '"cognom1":"'.$rs["cognom1"].'",';
+                $json .= '"cognom2":"'.$rs["cognom2"].'",';
+                $json .= '"telefon":"'.$rs["telefon"].'",';
+                $json .= '"actiu":"'.$rs["actiu"].'"';
+                $json .= '}';
+            } 
+            $json .= "]}";
             return $json;
         }else{
             return null;
@@ -65,7 +232,7 @@ Class Database{
      * Mètode per donar d'alta un usuari administrador.
      * @Params: $email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus (dades per donar d'alta un usuari).
     */
-    public function crearUsuariAdministrador($email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus){
+    public function crearUsuariAdministrador($email,$password,$nom,$cognom1,$cognom2,$telefon,$actiu,$tipus){
         
         $insert = "INSERT INTO usuaris (email,password,nom,cognom1,cognom2,telefon,tipus,actiu) VALUES ";
         $insert .= "(";
@@ -80,18 +247,18 @@ Class Database{
         }
         $insert .= "'".$telefon."',";
         $insert .= "'".$tipus."',";
-        $insert .= "1";
+        $insert .= "'".$actiu."'";
         $insert .= ")";
         $this->conn->query($insert);
         return mysqli_insert_id($this->conn);
         
     }
     
-        /*
+    /*
      * Mètode per donar d'alta un usuari treballador del punt de recollida.
      * @Params: $email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus (dades per donar d'alta un usuari).
     */
-    public function crearUsuariTreballador($email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus){
+    public function crearUsuariTreballador($email,$password,$nom,$cognom1,$cognom2,$telefon,$actiu,$tipus){
         
         $insert = "INSERT INTO usuaris (email,password,nom,cognom1,cognom2,telefon,tipus,actiu) VALUES ";
         $insert .= "(";
@@ -106,18 +273,18 @@ Class Database{
         }
         $insert .= "'".$telefon."',";
         $insert .= "'".$tipus."',";
-        $insert .= "1";
+        $insert .= "'".$actiu."'";
         $insert .= ")";
         $this->conn->query($insert);
         return mysqli_insert_id($this->conn);
         
     }
     
-       /*
+    /*
      * Mètode per donar d'alta un usuari residuent
      * @Params: $email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus, $carrer, $cp i $poblacio (dades per donar d'alta un usuari).
     */
-    public function crearUsuariResiduent($email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus,$carrer,$poblacio,$cp){
+    public function crearUsuariResiduent($email,$password,$nom,$cognom1,$cognom2,$telefon,$actiu,$tipus,$carrer,$poblacio,$cp){
         
         $insert = "INSERT INTO usuaris (email,password,nom,cognom1,cognom2,telefon,tipus,actiu) VALUES ";
         $insert .= "(";
@@ -132,7 +299,7 @@ Class Database{
         }
         $insert .= "'".$telefon."',";
         $insert .= "'".$tipus."',";
-        $insert .= "1";
+        $insert .= "'".$actiu."'";
         $insert .= ")";
         $this->conn->query($insert);
         $idInsertatUsuari =  mysqli_insert_id($this->conn);
@@ -154,6 +321,146 @@ Class Database{
         
         return $idInsertatUsuari;
         
+        
+    }
+   
+     /*
+     * Mètode per donar d'alta un usuari adherit
+     * @Params: $email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus, $carrer, $cp, $poblacio, $nomEmpresa, $horari (dades per donar d'alta un usuari).
+    */
+    public function crearUsuariAdherit($email,$password,$nom,$cognom1,$cognom2,$telefon,$actiu,$tipus,$carrer,$poblacio,$cp,$nomAdherit,$horari,$tipusAdherit){
+        
+        $insert = "INSERT INTO usuaris (email,password,nom,cognom1,cognom2,telefon,tipus,actiu) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$email."',";
+        $insert .= "'".$password."',";
+        $insert .= "'".$nom."',";
+        $insert .= "'".$cognom1."',";
+        if(!is_null($cognom2)){
+            $insert .= "'".$cognom2."',";
+        }else{
+            $insert .= "'',";
+        }
+        $insert .= "'".$telefon."',";
+        $insert .= "'".$tipus."',";
+        $insert .= "'".$actiu."'";
+        $insert .= ")";
+        $this->conn->query($insert);
+        $idInsertatUsuari =  mysqli_insert_id($this->conn);
+        
+        $insert = "INSERT INTO adresa (usuari,carrer, cp, poblacio) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$idInsertatUsuari."',";
+        $insert .= "'". str_replace("'","\'", $carrer)."',";
+        $insert .= "'".$cp."',";
+        $insert .= "'".$poblacio."'";
+        $insert .= ")";
+        $this->conn->query($insert);
+        
+        $insert = "INSERT INTO saldo (usuari) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$idInsertatUsuari."'";
+        $insert .= ")";
+        $this->conn->query($insert);
+        
+        $insert = "INSERT INTO adherit (usuari,tipus,nom,horari) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$idInsertatUsuari."',";
+        $insert .= "'".$tipusAdherit."',";
+        $insert .= "'".$nomAdherit."',";
+        $insert .= "'".$horari."'";
+        $insert .= ")";
+        $this->conn->query($insert);
+        
+        return $idInsertatUsuari;
+        
+        
+    }
+    
+    /*
+     * Mètode per modificar un usuari administrador.
+     * @Params: $id, $email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus, $actiu (dades per modificar un usuari).
+    */
+    public function modificarUsuariAdministrador($id,$email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus,$actiu){
+        
+        $update = "UPDATE usuaris ";
+        $update .= "SET ";
+        $update .= "email = '".$email."',";
+        $update .= "password = '".$password."',";
+        $update .= "nom = '".$nom."',";
+        $update .= "cognom1 = '".$cognom1."',";
+        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "telefon = '".$telefon."',";
+        $update .= "tipus = '".$tipus."',";
+        $update .= "actiu = '".$actiu."' ";
+        $update .= "WHERE id = '".$id."'";
+        $this->conn->query($update);
+        
+    }
+    
+    public function modificarUsuariTreballador($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$carrer,$poblacio,$cp){
+        
+        $update = "UPDATE usuaris ";
+        $update .= "SET ";
+        $update .= "id = '".$id."',";
+        $update .= "email = '".$email."',";
+        $update .= "password = '".$password."',";
+        $update .= "nom = '".$nom."',";
+        $update .= "cognom1 = '".$cognom1."',";
+        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "telefon = '".$telefon."',";
+        $update .= "tipus = '".$tipus."',";
+        $update .= "WHERE id = '".$id."'";
+        
+        
+        $this->conn->query($update);
+        
+    }
+    
+    public function modificarUsuariResiduent($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$carrer,$poblacio,$cp){
+        
+        $update = "UPDATE usuaris ";
+        $update .= "SET ";
+        $update .= "id = '".$id."',";
+        $update .= "email = '".$email."',";
+        $update .= "password = '".$password."',";
+        $update .= "nom = '".$nom."',";
+        $update .= "cognom1 = '".$cognom1."',";
+        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "telefon = '".$telefon."',";
+        $update .= "tipus = '".$tipus."',";
+        $update .= "carrer = '".$carrer."',";
+        $update .= "poblacio = '".$poblacio."',";
+        $update .= "cp = '".$cp."',";
+        $update .= "WHERE id = '".$id."'";
+        
+        
+        $this->conn->query($update);
+        
+    }
+    
+    public function modificarUsuariAdherit($id,$email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus,$actiu,$carrer,$poblacio,$cp,$nomEmpresa,$horari){
+        
+        $update = "UPDATE usuaris ";
+        $update .= "SET ";
+        $update .= "id = '".$id."',";
+        $update .= "email = '".$email."',";
+        $update .= "password = '".$password."',";
+        $update .= "nom = '".$nom."',";
+        $update .= "cognom1 = '".$cognom1."',";
+        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "telefon = '".$telefon."',";
+        $update .= "tipus = '".$tipus."',";
+        $update .= "actiu = '".$actiu."',";
+        $update .= "carrer = '".$carrer."',";
+        $update .= "poblacio = '".$poblacio."',";
+        $update .= "cp = '".$cp."',";
+        $update .= "nomEmpresa = '".$nomEmpresa."',";
+        $update .= "horari = '".$horari."',";
+        $update .= "WHERE id = '".$id."'";
+        
+        
+        $this->conn->query($update);
         
     }
     

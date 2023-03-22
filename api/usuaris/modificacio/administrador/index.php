@@ -1,5 +1,5 @@
 <?php
-// API > usuaris > alta > administrador
+// API > usuaris > modificacio > administrador
 
 // Classes necesàries
 require ('../../../../utils/errors.php');
@@ -22,6 +22,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                 if($tokenActiu){
                     
                     // Dades de l'usuari administrador pasades per paràmetre
+                    if(isset($_POST["id"])){ $id =  $_POST["id"]; }else{ $id= null; } 
                     if(isset($_POST["tipus"])){ $tipus =  $_POST["tipus"]; }else{ $tipus = null; } 
                     if(isset($_POST["email"])){ $email =  $_POST["email"]; }else{ $email = null; }
                     if(isset($_POST["password"])){ $password =  $_POST["password"]; }else{ $password = null; } 
@@ -29,20 +30,20 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["cognom1"])){ $cognom1 =  $_POST["cognom1"]; }else{ $cognom1 = null; } 
                     if(isset($_POST["cognom2"])){ $cognom2 =  $_POST["cognom2"]; }else{ $cognom2 = null; } 
                     if(isset($_POST["telefon"])){ $telefon =  $_POST["telefon"]; }else{ $telefon = null; } 
-                    if(isset($_POST["actiu"])){ $actiu =  $_POST["actiu"]; }else{ $actiu = "1"; } 
+                    if(isset($_POST["actiu"])){ $actiu =  $_POST["actiu"]; }else{ $actu = null; } 
                     // control
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
                     // EL permís ha de ser 1 (usuari administrador)
                     if($permis == 1){
-                        if( ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null)){
+                        if( ($id != null) && ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($actiu != null)){
                             if($tipus == 1){
                                 // Comprovem si aquest email ja té usuari
-                                $existeix = $db->existeixUsuari($email);
-                                if(!$existeix){
-                                    $idInsertat = $db->crearUsuariAdministrador($email, $password, $nom, $cognom1, $cognom2, $telefon, $actiu, $tipus);
-                                    echo '{"codi_error":"0","accio":"alta","descripcio":"S\'ha donat d\'alta l\'usuari: '.$email.'","id":"'.$idInsertat.'"}';
-                                }else{ echo $errors["20"]; } 
+                                $existeix = $db->existeixUsuariId($id);
+                                if($existeix){
+                                    $db->modificarUsuariAdministrador($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$actiu);
+                                    echo '{"codi_error":"0","accio":"modificacio","descripcio":"S\'ha modificat l\'usuari: '.$email.'."}';
+                                }else{ echo $errors["29"]; } 
                             }else{ echo $errors["13"]; }
                         }else{ echo $errors["12"]; }    
                     }else { echo $errors["11"]; }

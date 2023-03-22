@@ -12,8 +12,7 @@ header("Content-Type: application/json");
 switch($_SERVER["REQUEST_METHOD"]){
     
     case 'POST':
-        if(isset($_POST["opcio"])){
-            if($_POST["opcio"]=="token"){
+
                 if(isset($_POST["usuari"])){
                     if(is_numeric($_POST["usuari"])){
                         // Select a usuarios para ver si existe.
@@ -27,8 +26,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                         }else{ echo $errors["6"]; }
                     }else{ echo $errors["5"]; }
                 }else{ echo $errors["4"]; }
-            }else{ echo $errors["3"]; }         
-        }else{ echo $errors["2"]; }
+
     break;
     
     default:

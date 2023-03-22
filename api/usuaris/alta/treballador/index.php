@@ -29,6 +29,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["cognom1"])){ $cognom1 =  $_POST["cognom1"]; }else{ $cognom1 = null; } 
                     if(isset($_POST["cognom2"])){ $cognom2 =  $_POST["cognom2"]; }else{ $cognom2 = null; } 
                     if(isset($_POST["telefon"])){ $telefon =  $_POST["telefon"]; }else{ $telefon = null; } 
+                    if(isset($_POST["actiu"])){ $actiu =  $_POST["actiu"]; }else{ $actiu = "1"; } 
                     // control
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
@@ -39,8 +40,8 @@ switch($_SERVER["REQUEST_METHOD"]){
                                 // Comprovem si aquest email ja té usuari
                                 $existeix = $db->existeixUsuari($email);
                                 if(!$existeix){
-                                    $idInsertat = $db->crearUsuariTreballador($email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus);
-                                    echo '{"codi_error":"0","accio":"alta","descripcio":"S\'ha donat d\'alta l\'usuari: '.$email.',"id":"'.$idInsertat.'"}';
+                                    $idInsertat = $db->crearUsuariTreballador($email, $password, $nom, $cognom1, $cognom2, $telefon, $actiu, $tipus);
+                                    echo '{"codi_error":"0","accio":"alta","descripcio":"S\'ha donat d\'alta l\'usuari: '.$email.'","id":"'.$idInsertat.'"}';
                                 }else{ echo $errors["20"]; } 
                             }else{ echo $errors["19"]; }
                         }else{ echo $errors["12"]; }    

@@ -1,5 +1,5 @@
 <?php
-// API > usuaris > alta > administrador
+// API > usuaris > alta > adherit
 
 // Classes necesàries
 require ('../../../../utils/errors.php');
@@ -13,14 +13,13 @@ switch($_SERVER["REQUEST_METHOD"]){
 
     // Opció POST, correcta.
     case 'POST':
-        // Control token
-        if(isset($_POST["id_usuari"])){
+         if(isset($_POST["id_usuari"])){
             $idUsuari = $_POST["id_usuari"];
             if(isset($_POST["token"])){
                 $token = $_POST["token"];
                 $tokenActiu = $db->validarToken($idUsuari,$token);
-                if($tokenActiu){
-                    
+                if($tokenActiu == true){
+        
                     // Dades de l'usuari administrador pasades per paràmetre
                     if(isset($_POST["tipus"])){ $tipus =  $_POST["tipus"]; }else{ $tipus = null; } 
                     if(isset($_POST["email"])){ $email =  $_POST["email"]; }else{ $email = null; }
@@ -30,26 +29,32 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["cognom2"])){ $cognom2 =  $_POST["cognom2"]; }else{ $cognom2 = null; } 
                     if(isset($_POST["telefon"])){ $telefon =  $_POST["telefon"]; }else{ $telefon = null; } 
                     if(isset($_POST["actiu"])){ $actiu =  $_POST["actiu"]; }else{ $actiu = "1"; } 
+                    if(isset($_POST["carrer"])){ $carrer =  $_POST["carrer"]; }else{ $carrer = null; } 
+                    if(isset($_POST["poblacio"])){ $poblacio =  $_POST["poblacio"]; }else{ $poblacio = null; } 
+                    if(isset($_POST["cp"])){ $cp =  $_POST["cp"]; }else{ $cp = null; } 
+                    if(isset($_POST["nom_adherit"])){ $nomAdherit =  $_POST["nom_adherit"]; }else{ $nomAdherit = null; } 
+                    if(isset($_POST["horari"])){ $horari =  $_POST["horari"]; }else{ $horari = null; } 
+                    if(isset($_POST["tipus_adherit"])){ $tipusAdherit =  $_POST["tipus_adherit"]; }else{ $tipusAdherit = null; } 
                     // control
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
-                    // EL permís ha de ser 1 (usuari administrador)
                     if($permis == 1){
-                        if( ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null)){
-                            if($tipus == 1){
-                                // Comprovem si aquest email ja té usuari
+                        if( ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($carrer != null) && ($cp != null) && ($poblacio != null) && ($horari != null) && ($nomEmpresa != null)){
+                            if($tipus == 4){
+                            // Comprovem si aquest email ja té usuari
                                 $existeix = $db->existeixUsuari($email);
-                                if(!$existeix){
-                                    $idInsertat = $db->crearUsuariAdministrador($email, $password, $nom, $cognom1, $cognom2, $telefon, $actiu, $tipus);
+                                    if(!$existeix){
+                                    $idInsertat = $db->crearUsuariAdherit($email, $password, $nom, $cognom1, $cognom2, $telefon, $actiu, $tipus,$carrer,$poblacio,$cp,$nomAdherit,$horari,$tipusAdherit);
                                     echo '{"codi_error":"0","accio":"alta","descripcio":"S\'ha donat d\'alta l\'usuari: '.$email.'","id":"'.$idInsertat.'"}';
                                 }else{ echo $errors["20"]; } 
-                            }else{ echo $errors["13"]; }
-                        }else{ echo $errors["12"]; }    
+                            }else{ echo $errors["28"]; }
+                        }else{ echo $errors["18"]; } 
                     }else { echo $errors["11"]; }
                     
                 }else{ echo $errors["16"]; }
             }else{ echo $errors["15"]; }
         }else{ echo $errors["14"]; }
+        
     break;
     
     // Opció per defecte, no és cap de les anteriors. Error.
