@@ -10,18 +10,35 @@ Class Database{
         $this->conn = new mysqli('localhost', 'residueix', 'R3s1du31X', 'ResidueixDB'); 
     }
     
+    public function cometes($string){
+        return str_replace("'", "\'", $string);
+    }
+    
     /*
      * Mètode per loginarse
      * @Params: $usuari i $password: Id i password de l'usuari
     */
     public function login($usuari,$password){
-        $select = "SELECT id, tipus, email, password, nom, cognom1, cognom2, telefon, actiu FROM usuaris WHERE email = '".$usuari."' AND password = '".$password."'";
+        $select = "SELECT u.id as id, ";
+        $select .= "u.tipus as tipus, ";
+        $select .= "u.email as email, ";
+        $select .= "u.password as password, ";
+        $select .= "u.nom as nom, ";
+        $select .= "u.cognom1 as cognom1, ";
+        $select .= "u.cognom2 as cognom2, "; 
+        $select .= "u.telefon as telefon, ";
+        $select .= "u.actiu as actiu, ";
+        $select .= "tu.nom as tipus_nom ";
+        $select .= "FROM usuaris u ";
+        $select .= "LEFT JOIN tipus_usuari tu ON u.tipus = tu.id ";
+        $select .= "WHERE email = '".$usuari."' AND password = '".$password."'";
         $r = $this->conn->query($select);
         if($r->num_rows > 0){
             $rs = $r->fetch_assoc();
             return array(
                         "id"=>$rs["id"],
                         "tipus"=>$rs["tipus"],
+                        "tipus_nom"=>$rs["tipus_nom"],
                         "email"=>$rs["email"],
                         "password"=>$rs["password"],
                         "nom"=>$rs["nom"],
@@ -65,6 +82,21 @@ Class Database{
     }
     
     /*
+     * Mètode per veure si existeix un usuari al sistema en el login
+     * @Params: $email (varchar): email de l'usuari a buscar 
+    */
+    public function existeixUsuariLogin($email){
+        $select = "SELECT id, email, password FROM usuaris WHERE email = '".$email."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            return '{"codi_error":"0","accio":"consulta","descripcio":"Existeix aquest correu a la base de dades.","id":"'.$rs["id"].'","email":"'.$rs["email"].'","password":"'.$rs["password"].'"}';
+        }else{
+            return false;
+        }
+    }
+    
+    /*
      * Mètode per veure si existeix un usuari al sistema
      * @Params: $id (int): identificador de l'usuari
     */
@@ -95,6 +127,8 @@ Class Database{
         
         $select = "SELECT ";
         $select .= "usu.id as id, ";
+        $select .= "usu.tipus as tipus, ";
+        $select .= "tusu.nom as tipus_nom, ";
         $select .= "usu.email as email, ";
         $select .= "usu.password as password, ";
         $select .= "usu.nom as nom, ";
@@ -105,23 +139,29 @@ Class Database{
         $select .= "adr.carrer as carrer, ";
         $select .= "adr.cp as cp, ";
         $select .= "adr.poblacio as poblacio, ";
+        $select .= "pob.nom as poblacio_nom, ";
+        $select .= "pob.provincia as provincia, ";
+        $select .= "pro.nom as provincia_nom, ";
         $select .= "adh.nom as nomAdherit, ";
         $select .= "adh.horari as horari, ";
-        $select .= "adh.tipus as tipusAdherit ";
+        $select .= "adh.tipus as tipusAdherit, ";
+        $select .= "tadh.nom as tipusAdherit_nom ";
         $select .= "FROM usuaris usu ";
+        $select .= "LEFT JOIN tipus_usuari tusu ON usu.tipus = tusu.id ";
         $select .= "LEFT JOIN adresa adr ON adr.usuari = usu.id ";
+        $select .= "LEFT JOIN poblacions pob ON adr.poblacio = pob.id ";
+        $select .= "LEFT JOIN provincies pro ON pob.provincia = pro.id ";
         $select .= "LEFT JOIN adherit adh ON adh.usuari = usu.id ";
+        $select .= "LEFT JOIN tipus_adherit tadh ON adh.tipus = tadh.id ";
         $select .= "WHERE usu.id = '".$idUsuari."'";
         $this->conn->query($select);
         $r = $this->conn->query($select);
         if($r->num_rows > 0){
             $rs = $r->fetch_assoc();
-            return '{ "codi_error":"0","id":"'.$rs["id"].'","email":"'.$rs["email"].'","password":"'.$rs["password"].'","nom":"'.$rs["nom"].'","cognom1":"'.$rs["cognom1"].'","cognom2":"'.$rs["cognom2"].'","telefon":"'.$rs["telefon"].'","actiu":"'.$rs["actiu"].'","carrer":"'.$rs["carrer"].'","cp":"'.$rs["cp"].'","poblacio":"'.$rs["poblacio"].'","nomAdherit":"'.$rs["nomAdherit"].'","horari":"'.$rs["horari"].'","tipusAdherit":"'.$rs["tipusAdherit"].'" }';
+            return '{ "codi_error":"0","id":"'.$rs["id"].'","tipus":"'.$rs["tipus"].'","tipus_nom":"'.$rs["tipus_nom"].'","email":"'.$rs["email"].'","password":"'.$rs["password"].'","nom":"'.$rs["nom"].'","cognom1":"'.$rs["cognom1"].'","cognom2":"'.$rs["cognom2"].'","telefon":"'.$rs["telefon"].'","actiu":"'.$rs["actiu"].'","carrer":"'.$rs["carrer"].'","cp":"'.$rs["cp"].'","poblacio":"'.$rs["poblacio"].'","poblacio_nom":"'.$rs["poblacio_nom"].'","provincia":"'.$rs["provincia"].'","provincia_nom":"'.$rs["provincia_nom"].'","nomAdherit":"'.$rs["nomAdherit"].'","horari":"'.$rs["horari"].'","tipusAdherit":"'.$rs["tipusAdherit"].'","tipusAdherit_nom":"'.$rs["tipusAdherit_nom"].'" }';
         }else{
             return null;
-        }
-        
-        
+        }        
     }
     
     /*
@@ -293,10 +333,10 @@ Class Database{
         $insert .= "(";
         $insert .= "'".$email."',";
         $insert .= "'".$password."',";
-        $insert .= "'".$nom."',";
-        $insert .= "'".$cognom1."',";
+        $insert .= "'".$this->cometes($nom)."',";
+        $insert .= "'".$this->cometes($cognom1)."',";
         if(!is_null($cognom2)){
-            $insert .= "'".$cognom2."',";
+            $insert .= "'".$this->cometes($cognom2)."',";
         }else{
             $insert .= "'',";
         }
@@ -319,10 +359,10 @@ Class Database{
         $insert .= "(";
         $insert .= "'".$email."',";
         $insert .= "'".$password."',";
-        $insert .= "'".$nom."',";
-        $insert .= "'".$cognom1."',";
+        $insert .= "'".$this->cometes($nom)."',";
+        $insert .= "'".$this->cometes($cognom1)."',";
         if(!is_null($cognom2)){
-            $insert .= "'".$cognom2."',";
+            $insert .= "'".$this->cometes($cognom2)."',";
         }else{
             $insert .= "'',";
         }
@@ -345,10 +385,10 @@ Class Database{
         $insert .= "(";
         $insert .= "'".$email."',";
         $insert .= "'".$password."',";
-        $insert .= "'".$nom."',";
-        $insert .= "'".$cognom1."',";
+        $insert .= "'".$this->cometes($nom)."',";
+        $insert .= "'".$this->cometes($cognom1)."',";
         if(!is_null($cognom2)){
-            $insert .= "'".$cognom2."',";
+            $insert .= "'".$this->cometes($cognom2)."',";
         }else{
             $insert .= "'',";
         }
@@ -362,7 +402,7 @@ Class Database{
         $insert = "INSERT INTO adresa (usuari,carrer, cp, poblacio) VALUES ";
         $insert .= "(";
         $insert .= "'".$idInsertatUsuari."',";
-        $insert .= "'". str_replace("'","\'", $carrer)."',";
+        $insert .= "'".$this->cometes($carrer)."',";
         $insert .= "'".$cp."',";
         $insert .= "'".$poblacio."'";
         $insert .= ")";
@@ -389,10 +429,10 @@ Class Database{
         $insert .= "(";
         $insert .= "'".$email."',";
         $insert .= "'".$password."',";
-        $insert .= "'".$nom."',";
-        $insert .= "'".$cognom1."',";
+        $insert .= "'".$this->cometes($nom)."',";
+        $insert .= "'".$this->cometes($cognom1)."',";
         if(!is_null($cognom2)){
-            $insert .= "'".$cognom2."',";
+            $insert .= "'".$this->cometes($cognom2)."',";
         }else{
             $insert .= "'',";
         }
@@ -406,7 +446,7 @@ Class Database{
         $insert = "INSERT INTO adresa (usuari,carrer, cp, poblacio) VALUES ";
         $insert .= "(";
         $insert .= "'".$idInsertatUsuari."',";
-        $insert .= "'". str_replace("'","\'", $carrer)."',";
+        $insert .= "'".$this->cometes($carrer)."',";
         $insert .= "'".$cp."',";
         $insert .= "'".$poblacio."'";
         $insert .= ")";
@@ -422,8 +462,8 @@ Class Database{
         $insert .= "(";
         $insert .= "'".$idInsertatUsuari."',";
         $insert .= "'".$tipusAdherit."',";
-        $insert .= "'".$nomAdherit."',";
-        $insert .= "'".$horari."'";
+        $insert .= "'".$this->cometes($nomAdherit)."',";
+        $insert .= "'".$this->cometes($horari)."'";
         $insert .= ")";
         $this->conn->query($insert);
         
@@ -442,9 +482,9 @@ Class Database{
         $update .= "SET ";
         $update .= "email = '".$email."',";
         $update .= "password = '".$password."',";
-        $update .= "nom = '".$nom."',";
-        $update .= "cognom1 = '".$cognom1."',";
-        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "nom = '".$this->cometes($nom)."',";
+        $update .= "cognom1 = '".$this->cometes($cognom1)."',";
+        $update .= "cognom2 = '".$this->cometes($cognom2)."',";
         $update .= "telefon = '".$telefon."',";
         $update .= "tipus = '".$tipus."',";
         $update .= "actiu = '".$actiu."' ";
@@ -453,67 +493,82 @@ Class Database{
         
     }
     
-    public function modificarUsuariTreballador($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$carrer,$poblacio,$cp){
+    public function modificarUsuariTreballador($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$actiu){
         
         $update = "UPDATE usuaris ";
         $update .= "SET ";
         $update .= "id = '".$id."',";
         $update .= "email = '".$email."',";
         $update .= "password = '".$password."',";
-        $update .= "nom = '".$nom."',";
-        $update .= "cognom1 = '".$cognom1."',";
-        $update .= "cognom2 = '".$cognom2."',";
+        $update .= "nom = '".$this->cometes($nom)."',";
+        $update .= "cognom1 = '".$this->cometes($cognom1)."',";
+        $update .= "cognom2 = '".$this->cometes($cognom2)."',";
         $update .= "telefon = '".$telefon."',";
         $update .= "tipus = '".$tipus."',";
+        $update .= "actiu = '".$actiu."' ";
         $update .= "WHERE id = '".$id."'";
-        
-        
         $this->conn->query($update);
         
     }
     
-    public function modificarUsuariResiduent($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$carrer,$poblacio,$cp){
+    public function modificarUsuariResiduent($id,$email, $password, $nom, $cognom1, $cognom2, $telefon, $tipus,$actiu,$carrer,$poblacio,$cp){
         
         $update = "UPDATE usuaris ";
         $update .= "SET ";
-        $update .= "id = '".$id."',";
-        $update .= "email = '".$email."',";
-        $update .= "password = '".$password."',";
-        $update .= "nom = '".$nom."',";
-        $update .= "cognom1 = '".$cognom1."',";
-        $update .= "cognom2 = '".$cognom2."',";
-        $update .= "telefon = '".$telefon."',";
-        $update .= "tipus = '".$tipus."',";
-        $update .= "carrer = '".$carrer."',";
-        $update .= "poblacio = '".$poblacio."',";
-        $update .= "cp = '".$cp."',";
-        $update .= "WHERE id = '".$id."'";
+        $update .= "id = '".$id."', ";
+        $update .= "email = '".$email."', ";
+        $update .= "password = '".$password."', ";
+        $update .= "nom = '".$this->cometes($nom)."',";
+        $update .= "cognom1 = '".$this->cometes($cognom1)."', ";
+        $update .= "cognom2 = '".$this->cometes($cognom2)."', ";
+        $update .= "telefon = '".$telefon."', ";
+        $update .= "tipus = '".$tipus."', ";
+        $update .= "actiu = '".$actiu."' ";
+        $update .= "WHERE id = '".$id."' ";
+        $this->conn->query($update);
         
-        
+        $update = "UPDATE adresa ";
+        $update .= "SET ";
+        $update .= "carrer = '".$this->cometes($carrer)."', ";
+        $update .= "cp = '".$cp."', ";
+        $update .= "poblacio = '".$poblacio."' ";
+        $update .= "WHERE usuari = '".$id."' ";
         $this->conn->query($update);
         
     }
     
-    public function modificarUsuariAdherit($id,$email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus,$actiu,$carrer,$poblacio,$cp,$nomEmpresa,$horari){
+    public function modificarUsuariAdherit($id,$email,$password,$nom,$cognom1,$cognom2,$telefon,$tipus,$actiu,$carrer,$poblacio,$cp,$tipusAdherit,$nomAdherit,$horari){
         
         $update = "UPDATE usuaris ";
         $update .= "SET ";
-        $update .= "id = '".$id."',";
-        $update .= "email = '".$email."',";
-        $update .= "password = '".$password."',";
-        $update .= "nom = '".$nom."',";
-        $update .= "cognom1 = '".$cognom1."',";
-        $update .= "cognom2 = '".$cognom2."',";
-        $update .= "telefon = '".$telefon."',";
-        $update .= "tipus = '".$tipus."',";
-        $update .= "actiu = '".$actiu."',";
-        $update .= "carrer = '".$carrer."',";
-        $update .= "poblacio = '".$poblacio."',";
-        $update .= "cp = '".$cp."',";
-        $update .= "nomEmpresa = '".$nomEmpresa."',";
-        $update .= "horari = '".$horari."',";
-        $update .= "WHERE id = '".$id."'";
+        $update .= "id = '".$id."', ";
+        $update .= "email = '".$email."', ";
+        $update .= "password = '".$password."', ";
+        $update .= "nom = '".$this->cometes($nom)."',";
+        $update .= "cognom1 = '".$this->cometes($cognom1)."', ";
+        $update .= "cognom2 = '".$this->cometes($cognom2)."', ";
+        $update .= "telefon = '".$telefon."', ";
+        $update .= "tipus = '".$tipus."', ";
+        $update .= "actiu = '".$actiu."' ";
+        $update .= "WHERE id = '".$id."' ";
+        $this->conn->query($update);
         
+        $update = "UPDATE adresa ";
+        $update .= "SET ";
+        $update .= "carrer = '".$this->cometes($carrer)."', ";
+        $update .= "cp = '".$cp."', ";
+        $update .= "poblacio = '".$poblacio."' ";
+        $update .= "WHERE usuari = '".$id."' ";
+        $this->conn->query($update);
+        
+        
+        $update = "UPDATE adherit ";
+        $update .= "SET ";
+        $update .= "tipus = '".$tipusAdherit."', ";
+        $update .= "nom = '".$this->cometes($nomAdherit)."', ";
+        $update .= "horari = '".$this->cometes($horari)."' ";
+        $update .= "WHERE usuari = '".$id."' ";
+        $this->conn->query($update);      
         
         $this->conn->query($update);
         

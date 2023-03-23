@@ -39,7 +39,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
                     if($permis == 1){
-                        if( ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($carrer != null) && ($cp != null) && ($poblacio != null) && ($horari != null) && ($nomEmpresa != null)){
+                        if( ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($carrer != null) && ($cp != null) && ($poblacio != null) && ($horari != null) && ($nomAdherit != null) && ($tipusAdherit != null)){
                             if($tipus == 4){
                             // Comprovem si aquest email ja té usuari
                                 $existeix = $db->existeixUsuari($email);

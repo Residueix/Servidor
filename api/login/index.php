@@ -25,6 +25,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                         echo '"codi_error":"0",';
                         echo '"id":"'.$login["id"].'",';
                         echo '"tipus":"'.$login["tipus"].'",';
+                        echo '"tipus_nom":"'.$login["tipus_nom"].'",';
                         echo '"email":"'.$login["email"].'",';
                         echo '"password":"'.$login["password"].'",';
                         echo '"nom":"'.$login["nom"].'",';
