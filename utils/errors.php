@@ -1,5 +1,7 @@
 <?php
 
+// Javier Valverde Lozano
+
 $errors = array(
     
     "1" => '{"codi_error":"token_1","error":"No s\'ha enviat el mètode correcte."}',
@@ -40,7 +42,7 @@ $errors = array(
     "36" => '{"codi_error":"usuaris_22","error":"Aquest usuari adherit no existeix."}',                            
     "37" => '{"codi_error":"usuaris_23","error":"Només pot donar d\'alta usuaris adherits."}',
     "38" => '{"codi_error":"usuaris_24","error":"Falten paràmetres per poder donar d\'alta un usuari. Recorda que com a mínim ha d\'haver: id, tipus d\'usuari, email, paraula clau, nom, cognom1 i cognom2, telèfon, actiu , carrer, poblacio, codi postal, nom empresa i horari."}',
-    
+    "39" => '{"codi_error":"usuaris_25","error":"No s\'ha trobat usuari amb aquest identificador."}',
     
     
     

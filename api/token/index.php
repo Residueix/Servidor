@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 // API Token
-
+// Javier Valverde Lozano
 // Classes necesàries
 require ('../../utils/errors.php');
 require ('../../utils/Database.php');

@@ -1,6 +1,7 @@
 <?php
 ini_set('display_errors', 1);
-    
+
+// Javier Valverde Lozano
 Class Database{
     
     private $conn;
@@ -85,7 +86,43 @@ Class Database{
         $update = "UPDATE usuaris SET actiu = '0' WHERE id = '".$idUsuari."'";
         $this->conn->query($update);
     }
-   
+    
+    /*
+     * Mètode per consultar un usuari del sistema
+     * @Params: $idUsuari (integer): Id de l'usuari a buscar.
+    */
+    public function consultaUsuari($idUsuari){
+        
+        $select = "SELECT ";
+        $select .= "usu.id as id, ";
+        $select .= "usu.email as email, ";
+        $select .= "usu.password as password, ";
+        $select .= "usu.nom as nom, ";
+        $select .= "usu.cognom1 as cognom1, ";
+        $select .= "usu.cognom2 as cognom2, ";
+        $select .= "usu.telefon as telefon, ";
+        $select .= "usu.actiu as actiu, ";
+        $select .= "adr.carrer as carrer, ";
+        $select .= "adr.cp as cp, ";
+        $select .= "adr.poblacio as poblacio, ";
+        $select .= "adh.nom as nomAdherit, ";
+        $select .= "adh.horari as horari, ";
+        $select .= "adh.tipus as tipusAdherit ";
+        $select .= "FROM usuaris usu ";
+        $select .= "LEFT JOIN adresa adr ON adr.usuari = usu.id ";
+        $select .= "LEFT JOIN adherit adh ON adh.usuari = usu.id ";
+        $select .= "WHERE usu.id = '".$idUsuari."'";
+        $this->conn->query($select);
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            return '{ "codi_error":"0","id":"'.$rs["id"].'","email":"'.$rs["email"].'","password":"'.$rs["password"].'","nom":"'.$rs["nom"].'","cognom1":"'.$rs["cognom1"].'","cognom2":"'.$rs["cognom2"].'","telefon":"'.$rs["telefon"].'","actiu":"'.$rs["actiu"].'","carrer":"'.$rs["carrer"].'","cp":"'.$rs["cp"].'","poblacio":"'.$rs["poblacio"].'","nomAdherit":"'.$rs["nomAdherit"].'","horari":"'.$rs["horari"].'","tipusAdherit":"'.$rs["tipusAdherit"].'" }';
+        }else{
+            return null;
+        }
+        
+        
+    }
     
     /*
      * Mètode per recuperar les poblacions (pot ser filtar pre provincia)
@@ -173,32 +210,50 @@ Class Database{
      * Mètode per recuperar els usuaris
      * @Params: sense
     */
-    public function llistatUsuaris($ordre,$filtre,$parametreFiltre){
+    public function llistatUsuaris($ordre,$tipus,$actiu){
         
-        $select = "SELECT id, tipus, email, password, nom, cognom1, cognom2, telefon, actiu FROM usuaris";
+        $select = "SELECT id, tipus, email, password, nom, cognom1, cognom2, telefon, actiu FROM usuaris ";
         
-        switch($filtre){
+        // Comprovem si ens arriba tipus i actiu
+        $filtres = "";
+        if(!is_null($tipus)){ 
+            if( ($tipus == "1") || ($tipus == "2") || ($tipus == "3") || ($tipus == "4")){
+                $filtres .= "tipus";
+            }
+        }
+        if(!is_null($actiu)){
+            if( ($actiu == "0") || ($actiu == "1")){
+                $filtres .= "actiu";
+            } 
+        }
+        
+        switch($filtres){
             case "tipus":
-                if( ($parametreFiltre=="1") || ($parametreFiltre=="2") || ($parametreFiltre=="3") || ($parametreFiltre=="4") ){
-                    $select .= " WHERE tipus = '".$parametreFiltre."'";
-                }
+                 $select .= "WHERE tipus = '".$tipus."' ";
+                break;
+            case "tipusactiu":
+                $select .= "WHERE tipus = '".$tipus."' AND actiu = '".$actiu."' ";
+                break;
+            case "actiu":
+                $select .= "WHERE actiu = '".$actiu."' ";
                 break;
             default:
+                // Sense filtres
                 break;
         }
         
         switch($ordre){
                 case "nom":
-                    $select .= " ORDER BY nom ASC";
+                    $select .= "ORDER BY nom ASC";
                     break;
                 case "cognoms":
-                    $select .= " ORDER BY cognom1 ASC, cognom2 ASC, nom ASC";
+                    $select .= "ORDER BY cognom1 ASC, cognom2 ASC, nom ASC";
                     break;
                 case "email":
-                    $select .= " ORDER BY email ASC";
+                    $select .= "ORDER BY email ASC";
                     break;
                 default:
-                    $select .= " ORDER BY nom ASC";
+                    $select .= "ORDER BY nom ASC";
                     break;
         }
         
@@ -224,7 +279,7 @@ Class Database{
             $json .= "]}";
             return $json;
         }else{
-            return null;
+            return '{"codi_error":"0","llistat":[]}';
         }
     }
     

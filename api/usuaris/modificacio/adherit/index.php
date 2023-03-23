@@ -1,6 +1,6 @@
 <?php
 // API > usuaris > modificacio > adherit
-
+// Javier Valverde Lozano
 // Classes necesàries
 require ('../../../../utils/errors.php');
 require ('../../../../utils/Database.php');

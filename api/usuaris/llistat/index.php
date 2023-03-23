@@ -1,6 +1,6 @@
 <?php
 // API > usuaris > llistat
-
+// Javier Valverde Lozano
 // Classes necesàries
 require ('../../../utils/errors.php');
 require ('../../../utils/Database.php');
@@ -26,10 +26,11 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if($permis == 1){
                         
                         if(isset($_POST["ordre"])){ $ordre =  $_POST["ordre"]; }else{ $ordre = null; }
-                        if(isset($_POST["filtre"])){ $filtre =  $_POST["filtre"]; }else{ $filtre = null; }
-                        if(isset($_POST["parametre_filtre"])){ $parametreFiltre =  $_POST["parametre_filtre"]; }else{ $parametreFiltre = null; }
+                        if(isset($_POST["tipus"])){ $tipus =  $_POST["tipus"]; }else{ $tipus = null; }
+                        if(isset($_POST["actiu"])){ $actiu =  $_POST["actiu"]; }else{ $actiu = null; }
+                       
                         
-                        $llistatUsuaris = $db-> llistatUsuaris($ordre,$filtre,$parametreFiltre);
+                        $llistatUsuaris = $db-> llistatUsuaris($ordre,$tipus,$actiu);
                         echo $llistatUsuaris;
                         
                     }else { echo $errors["11"]; }

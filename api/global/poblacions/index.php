@@ -1,5 +1,6 @@
 <?php
 // API > global > poblacions
+// Javier Valverde Lozano
 
 // Classes necesàries
 require ('../../../utils/errors.php');

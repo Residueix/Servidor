@@ -1,5 +1,5 @@
 <?php
-// API > usuaris > baixa 
+// API > usuaris > consulta 
 // Javier Valverde Lozano
 // Classes necesàries
 require ('../../../utils/errors.php');
@@ -23,20 +23,30 @@ switch($_SERVER["REQUEST_METHOD"]){
                     
                     if(isset($_POST["id"])){ $id =  $_POST["id"]; }else{ $id = null; } 
                     
+                    
                     switch($permis){
                         
-                        // Administrador pot donar de baixa qualsevol usuari
+                        // Administrador o treballador pot consultar qualsevol usuari.
                         case 1:
-                            $db->baixaUsuari($id);
-                            echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\'id":"'.$id.'"}';
+                        case 2:
+                            $consulta = $db->consultaUsuari($id);
+                            if(!is_null($consulta)){
+                                echo $consulta;
+                            }else{
+                                echo $errors["39"];
+                            }
                             break;
                         
-                        // Residuent/adherit pot donar de baixa el seu propi usuari
+                        // Residuent/adherit pot consultar el seu propi usuari
                         case 3:
                         case 4:
                             if($idUsuari == $id){
-                                $db->baixaUsuari($id);
-                                echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\'id":"'.$id.'"}';
+                                $consulta = $db->consultaUsuari($id);
+                                if(!is_null($consulta)){
+                                    echo $consulta;
+                                }else{
+                                    echo $errors["39"];
+                                }
                             }else{
                               echo $errors["11"];  
                             }
