@@ -1,17 +1,32 @@
 <?php
 ini_set('display_errors', 1);
 
+
 // Javier Valverde Lozano
 Class Database{
     
     private $conn;
+    private $e;
+    private $token;
     
-    public function __construct(){
+    public function __construct($error){
         $this->conn = new mysqli('localhost', 'residueix', 'R3s1du31X', 'ResidueixDB'); 
+        $this->e = $error;
+        $this->token = '6e06ad1160adeafe010cebb9';
+    }
+    
+    public function getToken(){
+        return $this->token;
     }
     
     public function cometes($string){
         return str_replace("'", "\'", $string);
+    }
+    
+    public function format($string){
+        $retorn = str_replace("'", "\'", $string);
+        $retorn = str_replace(["\r","\n","\r\n","\n\r"], "", $retorn);
+        return $retorn;
     }
     
     /*
@@ -92,7 +107,7 @@ Class Database{
             $rs = $r->fetch_assoc();
             return '{"codi_error":"0","accio":"consulta","descripcio":"Existeix aquest correu a la base de dades.","id":"'.$rs["id"].'","email":"'.$rs["email"].'","password":"'.$rs["password"].'"}';
         }else{
-            return false;
+            return null;
         }
     }
     
@@ -117,6 +132,44 @@ Class Database{
     public function baixaUsuari($idUsuari){
         $update = "UPDATE usuaris SET actiu = '0' WHERE id = '".$idUsuari."'";
         $this->conn->query($update);
+    }
+    
+    
+    /*
+     * Mètode per passar a inactiu si existeix el residu al sistema
+     * @Params: $id (integer): Id del residu a buscar.
+    */
+    public function baixaResidu($id){
+        $update = "UPDATE residus SET actiu = '0' WHERE id = '".$id."'";
+        $this->conn->query($update);
+        return '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa el residu amb l\'id '.$id.'","id":"'.$id.'"}';
+    }
+    
+    
+    /*
+     * Mètode per eliminar el tipus de residu al sistema
+     * @Params: $id (varchar): id del tipus de residu a eliminar
+    */
+    public function baixaTipusResidu($id){
+        
+        $select = "SELECT r.id as idResidu, r.tipus as idTipusResidu, r.nom as nomResidu, r.imatge as imatgeResidu, r.descripcio as descripcioResidu, r.actiu as actiuResidu, r.valor as valorResidu, tr.nom as nomTipusResidu, tr.imatge as imatgeTipusResidu ";
+        $select .= "FROM residus r ";
+        $select .= "LEFT JOIN tipus_residu tr ON tr.id = r.tipus ";
+        $select .= "WHERE tr.id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            return $this->e["57"];
+        }else{
+            $select = "SELECT imatge FROM tipus_residu WHERE id = '".$id."'";
+            $r2 = $this->conn->query($select);
+            $rs2 = $r2->fetch_assoc();
+            $arxiu = "/opt/lampp/htdocs/residueix/img/residus/tipus/" . $rs2["imatge"];
+            unlink($arxiu);
+            $delete = "DELETE FROM tipus_residu WHERE id = '".$id."'";
+            $r3 = $this->conn->query($delete);
+            return '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha eliminat el tipus de registre."}';
+        }     
+       
     }
     
     /*
@@ -198,29 +251,32 @@ Class Database{
         }
     }
     
+    
     /*
-     * Mètode per recuperar els tipus d'usuari existents
+     * Mètode per recuperar els tipus de residu existents
      * @Params: sense.
     */
-    public function llistatTipusUsuari(){
-        $select = "SELECT id, nom ";
-        $select .= "FROM tipus_usuari ";
-        $select .= "ORDER BY id ASC";
+    public function llistatTipusResidu(){
+        
+        $select = "SELECT id, nom ,imatge ";
+        $select .= "FROM tipus_residu ";
+        $select .= "ORDER BY nom ASC ";        
         $r = $this->conn->query($select);
+        
         if($r->num_rows > 0){
             $cont = 0;
             $json = '{"codi_error":"0","llistat":[';
             while($rs = $r->fetch_assoc()){
                 $cont++;
                 if($cont!=1){ $json .= ",";}
-                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'"}';
+                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","imatge":"'.$rs["imatge"].'"}';
             } 
             $json .= ']}';
             return $json;
         }else{
-            return null;
+            return '{"codi_error":"0","llistat":[]}';
         }
-    }
+    } 
     
     /*
      * Mètode per recuperar els tipus d'usuari existents
@@ -321,6 +377,104 @@ Class Database{
         }else{
             return '{"codi_error":"0","llistat":[]}';
         }
+    }
+    
+    
+    
+    /*
+     * Mètode per recuperar els usuaris
+     * @Params: sense
+    */
+    public function llistatResidus(){
+        
+        $select = "SELECT r.id as idResidu, r.tipus as idTipusResidu, r.nom as nomResidu, r.imatge as imatgeResidu, r.descripcio as descripcioResidu, r.valor as valorResidu, r.actiu as actiuResidu, tr.nom as nomTipusResidu, tr.imatge as imatgeTipusResidu ";
+        $select .= "FROM residus r ";
+        $select .= "LEFT JOIN tipus_residu tr ON tr.id = r.tipus ";
+        $select .= "ORDER BY r.nom ASC ";
+        
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ",";}
+                $json .= '{';
+                $json .= '"id_residu":"'.$rs["idResidu"].'",';
+                $json .= '"id_tipus_residu":"'.$rs["idTipusResidu"].'",';
+                $json .= '"nom_residu":"'.$rs["nomResidu"].'",';
+                $json .= '"imatge_residu":"'.$rs["imatgeResidu"].'",';
+                $json .= '"descripcio_residu":"'. str_replace("\n","\\n",$rs["descripcioResidu"]).'",';
+                $json .= '"valor_residu":"'.$rs["valorResidu"].'",';
+                $json .= '"actiu_residu":"'.$rs["actiuResidu"].'",';
+                $json .= '"nom_tipus_residu":"'.$rs["nomTipusResidu"].',",';
+                $json .= '"imatge_tipus_residu":"'.$rs["imatgeTipusResidu"].'"';
+                $json .= '}';
+            } 
+            $json .= "]}";
+            return $json;
+        }else{
+            return '{"codi_error":"0","llistat":[]}';
+        }
+    }
+ 
+    /*
+     * Mètode per recuperar un tipus de residu
+     * @Params: sense
+    */
+    public function consultaTipusResidu($id){
+        
+        if(is_null($id)){
+            return $this->e["56"];
+        }else{
+             $select = "SELECT id, nom, imatge FROM tipus_residu WHERE id = '".$id."'";
+             $r = $this->conn->query($select);
+             if($r->num_rows > 0){
+                 $rs = $r->fetch_assoc();
+                 return '{"codi_error":"0","id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","imatge":"'.$rs["imatge"].'"}';
+             }else{
+                return $this->e["55"];
+             }
+        }
+        
+    }
+    
+    /*
+     * Mètode per recuperar un residu
+     * @Params: id residu
+    */
+    public function consultaResidu($id){
+        
+        if(is_null($id)){
+            return $this->e["61"];
+        }else{
+            
+            $select = "SELECT r.id as idResidu, r.tipus as idTipusResidu, r.nom as nomResidu, r.imatge as imatgeResidu, r.descripcio as descripcioResidu, r.valor as valorResidu, r.actiu as actiuResidu, tr.nom as nomTipusResidu, tr.imatge as imatgeTipusResidu ";
+            $select .= "FROM residus r ";
+            $select .= "LEFT JOIN tipus_residu tr ON tr.id = r.tipus ";
+            $select .= "WHERE r.id = '".$id."' ";
+            $r = $this->conn->query($select);
+            
+            if($r->num_rows > 0){
+                $rs = $r->fetch_assoc();
+                $json = '{';
+                $json .= '"codi_error":"0",';
+                $json .= '"id_residu":"'.$rs["idResidu"].'",';
+                $json .= '"id_tipus_residu":"'.$rs["idTipusResidu"].'",';
+                $json .= '"nom_residu":"'.$rs["nomResidu"].'",';
+                $json .= '"imatge_residu":"'.$rs["imatgeResidu"].'",';
+                $json .= '"descripcio_residu":"'. str_replace("\n","\\n",$rs["descripcioResidu"]).'",';
+                $json .= '"valor_residu":"'.$rs["valorResidu"].'",';
+                $json .= '"actiu_residu":"'.$rs["actiuResidu"].'",';
+                $json .= '"nom_tipus_residu":"'.$rs["nomTipusResidu"].'",';
+                $json .= '"imatge_tipus_residu":"'.$rs["imatgeTipusResidu"].'"';
+                $json .= '}';
+                return $json;
+             }else{
+                return $this->e["62"];
+             }
+        }
+        
     }
     
     /*
@@ -620,6 +774,209 @@ Class Database{
             return false;
         }
     }
+    
+    /*
+     * Mètode per donar d'alta un tipus de residu
+     * @Params: $nom (String)(nom del tipus de residu) 
+     * @Params: $imatge (String)(nom de la imatge)
+     */
+    public function altaTipusResidu($nom,$imatge){
+        
+        $insert = "INSERT INTO tipus_residu ";
+        $insert .= "(nom, imatge ) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$this->format($nom)."',";
+        $insert .= "'".$imatge."'";
+        $insert .= ")";
+        if($this->conn->query($insert)){
+            return '{"codi_error":"0","descripcio":"Tipus de residu donat d\'alta"}';
+        }else{
+            return $this->e["41"];
+        }
+        
+    }
+    
+    /*
+     * Mètode per donar d'alta un residu
+     * @Params: $tipus (Int, id) $nom (String)(nom del residu) 
+     * @Params: $imatge (String)(nom de la imatge)
+     * @Params: $descripcio (String)(explicació), $valor (Decimal) valor real del residu
+     * @Params: $actiu (Int)
+     */
+    public function altaResidu($tipus,$nom,$imatge,$descripcio,$valor,$actiu){
+        
+        $insert = "INSERT INTO residus ";
+        $insert .= "(tipus, nom, imatge, descripcio, valor, actiu ) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$tipus."',";
+        $insert .= "'".$nom."',";
+        $insert .= "'".$imatge."',";
+        $insert .= "'".$this->conn->real_escape_string($descripcio)."',";
+        $insert .= "'".$valor."',";
+        $insert .= "'".$actiu."'";
+        $insert .= ")";
+        if($this->conn->query($insert)){
+            return '{"codi_error":"0","descripcio":"Residu donat d\'alta"}';
+        }else{
+            return $this->e["48"];
+        }
+        
+    }
+    
+    /*
+     * Mètode per modificar un tipus de residu
+     * @Params: $nom (String)(nom del tipus de residu) 
+     * @Params: $imatge (String)(nom de la imatge)
+     */
+    public function modificarTipusResidu($id,$nom,$imatge){
+        
+        $select = "SELECT imatge FROM tipus_residu WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            
+            if($imatge != null){
+                $rs = $r->fetch_assoc();
+                unlink("/opt/lampp/htdocs/residueix/img/residus/tipus/" . $rs["imatge"]);
+                $update = "UPDATE tipus_residu ";
+                $update .= "SET ";
+                $update .= "nom = '".$this->format($nom)."' ,";
+                $update .= "imatge = '".$imatge."' ";
+                $update .= "WHERE id = '".$id."'";
+                $this->conn->query($update);
+                return '{"codi_error":"0","descripcio":"Tipus de residu modificat."}';
+            }else{
+                $update = "UPDATE tipus_residu ";
+                $update .= "SET ";
+                $update .= "nom = '".$this->format($nom)."' ";
+                $update .= "WHERE id = '".$id."'";
+                $this->conn->query($update);
+                return '{"codi_error":"0","descripcio":"Tipus de residu modificat."}';    
+            }
+            
+        }else{
+            return $this->e["42"];
+        }  
+        
+        
+    }
+    
+    
+    /*
+     * Mètode per modificar un residu
+     * @Params: $id (Int)(Identificador)
+     * @Params: $nom (String)(nom del residu) 
+     * @Params: $imatge (String)(nom de la imatge)
+     * @Params: $descripcio (Text)(Explicació residu)
+     * @Params: $valor (Decimal)(valor del residu)
+     * @Params: $actiu (Int)(0=inactiu 1=actiu)
+     */
+    public function modificarResidu($id,$tipus,$nom,$nomFinalImatge,$descripcio,$valor,$actiu){
+        
+        $select = "SELECT imatge FROM residus WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            if($nomFinalImatge != null){
+                unlink("/opt/lampp/htdocs/residueix/img/residus/" . $rs["imatge"]);
+            }
+        }
+                
+        $update = "UPDATE residus ";
+        $update .= "SET ";
+        $update .= "id = '".$id."' ,";
+        $update .= "tipus = '".$tipus."' ,";
+        $update .= "nom = '".$this->format($nom)."' ,";
+        if($nomFinalImatge != null){
+            $update .= "imatge = '".$nomFinalImatge."', ";
+        }
+        $update .= "descripcio = '".$this->conn->real_escape_string($descripcio)."' ,";
+        $update .= "valor = '".$this->format($valor)."' ,";
+        $update .= "actiu = '".$actiu."' ";
+        $update .= "WHERE id = '".$id."'";
+        $this->conn->query($update);
+        
+        return '{"codi_error":"0","descripcio":"Residu modificat correctament."}';
+        
+    }
+    
+// Punts de recollida
+// *************************************************************************
+    
+    /*
+     * Mètode per recuperar el llistat de punts de recollida.
+     * @Params: sense.
+    */
+    public function llistatPuntsRecollida($actiu){
+        
+        $select = "SELECT ";
+        $select .= "pr.id as idPunt, pr.nom as nomPunt, pr.descripcio as descripcioPunt, pr.imatge as imatgePunt, pr.latitud as latitudPunt, pr.longitud as longitudPunt, pr.carrer as carrerPunt, pr.cp as cpPunt, pr.poblacio as idPoblacio, pr.horari as horariPunt, pr.actiu as actiuPunt, ";
+        $select .= "pob.nom as nomPoblacio, pob.provincia as idProvincia, ";
+        $select .= "pro.nom as nomProvincia ";
+        $select .= "FROM punts_recollida pr ";
+        $select .= "LEFT JOIN poblacions pob ON pob.id = pr.poblacio ";
+        $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
+        switch($actiu){
+            case "0":
+                // baixes
+                $select .= "WHERE pr.actiu = '0' ";
+            break;
+            case "1":
+                // actius
+                $select .= "WHERE pr.actiu = '1' ";
+            break;
+            case "2":
+                // tots no posem clausula where.
+            break;
+            default:
+                // Opció per defecte
+                $select .= "WHERE pr.actiu = '1' ";
+            break;
+            
+        }
+        $select .= "ORDER BY pr.nom ASC ";
+        
+        $r = $this->conn->query($select);
+        
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ","; }
+                $json .= '{"id_punt":"'.$rs["idPunt"].'","nom_pun":"'.$rs["nomPunt"].'","descripcio":"'.$rs["descripcioPunt"].'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPUnt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return '{"codi_error":"0","llistat":[]}';
+        }
+    } 
+    
+    /*
+     * Mètode per recuperar el un punt de recollida determinat.
+     * @Params: id punt de recollida.
+    */
+    public function consultaPuntRecollida($id){
+        
+        $select = "SELECT ";
+        $select .= "pr.id as idPunt, pr.nom as nomPunt, pr.descripcio as descripcioPunt, pr.imatge as imatgePunt, pr.latitud as latitudPunt, pr.longitud as longitudPunt, pr.carrer as carrerPunt, pr.cp as cpPunt, pr.poblacio as idPoblacio, pr.horari as horariPunt, pr.actiu as actiuPunt, ";
+        $select .= "pob.nom as nomPoblacio, pob.provincia as idProvincia, ";
+        $select .= "pro.nom as nomProvincia ";
+        $select .= "FROM punts_recollida pr ";
+        $select .= "LEFT JOIN poblacions pob ON pob.id = pr.poblacio ";
+        $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
+        $select .= "WHERE pr.id = '".$id."' ";
+        
+        $r = $this->conn->query($select);
+        
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            $json .= '{"id_punt":"'.$rs["idPunt"].'","nom_pun":"'.$rs["nomPunt"].'","descripcio":"'.$rs["descripcioPunt"].'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPUnt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
+            return $json;
+        }else{
+            return $this->e["68"];
+        }
+    } 
 
 
 }

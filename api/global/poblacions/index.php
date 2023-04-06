@@ -5,7 +5,7 @@
 // Classes necesàries
 require ('../../../utils/errors.php');
 require ('../../../utils/Database.php');
-$db = new Database();
+$db = new Database($errors);
 
 // Rebem les peticions de l'usuari
 header("Content-Type: application/json");

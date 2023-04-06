@@ -44,6 +44,39 @@ $errors = array(
     "38" => '{"codi_error":"usuaris_24","error":"Falten paràmetres per poder donar d\'alta un usuari. Recorda que com a mínim ha d\'haver: id, tipus d\'usuari, email, paraula clau, nom, cognom1 i cognom2, telèfon, actiu , carrer, poblacio, codi postal, nom empresa i horari."}',
     "39" => '{"codi_error":"usuaris_25","error":"No s\'ha trobat usuari amb aquest identificador."}',
     "40" => '{"codi_error":"usuaris_26","error":"No s\'ha trobat usuari amb aquest email."}',
+    "41" => '{"codi_error":"tipus_residu_1","error":"No s\'ha pogut donar d\'alta el tipus de residu."}',
+    "42" => '{"codi_error":"tipus_residu_2","error":"No s\'ha pogut modificar el tipus de residu."}',
+    "43" => '{"codi_error":"llistat_1","error":"No hi ha cap tipus de residu."}',
+    "44" => '{"codi_error":"tipus_residu_3","error":"No s\'ha pogut carregar l\'imatge."}',
+    "45" => '{"codi_error":"tipus_residu_4","error":"Falten paràmetres per poder donar d\'alta un tipus de residu. Recorda que com a mínim ha d\'haver: nom i imatge."}',
+    "46" => '{"codi_error":"tipus_residu_5","error":"Només pot donar d\'alta usuaris administradors i treballadors."}',
+    "47" => '{"codi_error":"tipus_residu_6","error":"Falten paràmetres per poder modificar un tipus de residu. Recorda que com a mínim ha d\'haver: id, nom i imatge."}',
+    "48" => '{"codi_error":"residu_1","error":"No s\'ha pogut donar d\'alta el residu."}',
+    "49" => '{"codi_error":"residu_2","error":"No s\'ha pogut carregar l\'imatge."}',
+    "50" => '{"codi_error":"residu_3","error":"Falten paràmetres per poder donar d\'alta un residu. Recorda que com a mínim ha d\'haver: tipus, nom, imatge, descripcio, valor i actiu."}',
+    "51" => '{"codi_error":"residu_4","error":"No s\'ha pogut modificar el tipus de residu."}',
+    "52" => '{"codi_error":"residu_5","error":"Només pot llistar residus l\'administrador i treballador."}',
+    "53" => '{"codi_error":"residu_6","error":"Només pot llistar tipus de residus l\'administrador i treballador."}',
+    "54" => '{"codi_error":"residu_7","error":"Només pot consultar tipus de residus l\'administrador i treballador."}',
+    "55" => '{"codi_error":"residu_8","error":"L\'id passat com a paràmetre no correspon a cap tipus de residu."}',
+    "56" => '{"codi_error":"residu_9","error":  "No s\'ha passat cap id com a paràmetre."}',
+    "57" => '{"codi_error":"residu_10","error":"No es pot eliminar aquest tipus de residu perquè té residus relacionats."}',  
+    "58" => '{"codi_error":"tipus_residu_7","error":  "L\'Id passat a donar de baixa no existeix."}',
+    "59" => '{"codi_error":"tipus_residu_8","error":"Només pot donar de baixa tipus de residus l\'administrador i treballador."}',
+    "60" => '{"codi_error":"tipus_residu_9","error":"El token que utilitza aquest compte no esta actiu."}',
+    "61" => '{"codi_error":"residu_11","error":  "No s\'ha passat cap id com a paràmetre."}',
+    "62" => '{"codi_error":"residu_12","error":"L\'id passat com a paràmetre no correspon a cap residu."}',
+    "63" => '{"codi_error":"residu_13","error":"Falten paràmetres per modificar el residu."}',
+    "64" => '{"codi_error":"residu_14","error":"Error al carregar la imatge per modificar el residu."}',
+    "65" => '{"codi_error":"punst_recollida_1","error":"No té permís per veure el llistat de punts de recollida"}',
+    "66" => '{"codi_error":"token_10","error":"El token públic no és correcte."}',
+    "67" => '{"codi_error":"punst_recollida_2","error":"No s\'ha passat per paràmetre cap identificador (id)."}',
+    "68" => '{"codi_error":"punst_recollida_3","error":"El paràmetre passat com a identificador (id) no és vàlid o no retorna cap registre."}',
+    
+    
+    
+    
+    
     
     
     

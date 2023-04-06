@@ -4,7 +4,7 @@
 // Classes necesàries
 require ('../../../../utils/errors.php');
 require ('../../../../utils/Database.php');
-$db = new Database();
+$db = new Database($errors);
 
 // Rebem les peticions de l'usuari
 header("Content-Type: application/json");
@@ -36,7 +36,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     
                     // EL permís ha de ser 1 (usuari administrador)
                     if($permis == 1){
-                        if( ($id != null) && ($actiu != null) && ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($actiu != null)){
+                        if( ($id != null)  && ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($actiu != null)){
                             if($tipus == 2){
                                 // Comprovem si aquest id ja té usuari
                                 $existeix = $db->existeixUsuariId($id);

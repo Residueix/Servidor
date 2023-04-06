@@ -4,7 +4,7 @@
 // Classes necesàries
 require ('../../../utils/errors.php');
 require ('../../../utils/Database.php');
-$db = new Database();
+$db = new Database($errors);
 
 // Rebem les peticions de l'usuari
 header("Content-Type: application/json");
@@ -28,7 +28,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                         // Administrador pot donar de baixa qualsevol usuari
                         case 1:
                             $db->baixaUsuari($id);
-                            echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\'id":"'.$id.'"}';
+                            echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\''.$id.'","id":"'.$id.'"}';
                             break;
                         
                         // Residuent/adherit pot donar de baixa el seu propi usuari
@@ -36,7 +36,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                         case 4:
                             if($idUsuari == $id){
                                 $db->baixaUsuari($id);
-                                echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\'id":"'.$id.'"}';
+                                echo '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha donat de baixa amb l\''.$id.'","id":"'.$id.'"}';
                             }else{
                               echo $errors["11"];  
                             }
