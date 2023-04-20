@@ -23,10 +23,10 @@ switch($_SERVER["REQUEST_METHOD"]){
                     
                     if(isset($_POST["permis"])){ $permis = $_POST["permis"]; }else{ $permis = null; }
                     if(isset($_POST["tipus"])){ $tipus = $_POST["tipus"]; }else{ $tipus = null; }
-                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; }else{ $nom = null; }
+                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; if(trim($nom)==""){$nom=null;} }else{ $nom = null; }
                     if(isset($_FILES["imatge"])){ $imatge = true; }else{ $imatge = false; }
-                    if(isset($_POST["descripcio"])){ $descripcio = $_POST["descripcio"]; }else{ $descripcio = null; }
-                    if(isset($_POST["valor"])){ $valor = $_POST["valor"]; }else{ $valor = null; }
+                    if(isset($_POST["descripcio"])){ $descripcio = $_POST["descripcio"]; if(trim($descripcio)==""){$descripcio=null;} }else{ $descripcio = null; }
+                    if(isset($_POST["valor"])){ $valor = $_POST["valor"]; if(trim($valor)==""){$valor=null;}  }else{ $valor = null; }
                     if(isset($_POST["actiu"])){ $actiu = $_POST["actiu"]; }else{ $actiu = null; }
                     
                     if($permis == "1" || $permis == "2"){

@@ -5,13 +5,21 @@ ini_set('display_errors', 1);
 // Javier Valverde Lozano
 Class Database{
     
+    // Atributs-variables útils. (connexió, errors, token públic).
     private $conn;
     private $e;
     private $token;
     
+    /**
+     * Constructor de la classe
+     * @param type $error
+     */
     public function __construct($error){
+        // Connexió
         $this->conn = new mysqli('localhost', 'residueix', 'R3s1du31X', 'ResidueixDB'); 
+        // Errors
         $this->e = $error;
+        // Token públic
         $this->token = '6e06ad1160adeafe010cebb9';
     }
     
@@ -19,15 +27,45 @@ Class Database{
         return $this->token;
     }
     
+    /**
+     * Funció per eliminar les escapar les cometes d'un string.
+     * @param $string
+     * @return String
+     */
     public function cometes($string){
         return str_replace("'", "\'", $string);
     }
     
+    /**
+     * Funció per escapar cometes i salts de linia d'un string.
+     * @param $string
+     * @return String
+     */
     public function format($string){
         $retorn = str_replace("'", "\'", $string);
         $retorn = str_replace(["\r","\n","\r\n","\n\r"], "", $retorn);
         return $retorn;
     }
+    
+    /**
+     * Funció per formatejar a número
+     * @param $string
+     * @return String
+     */
+    public function numero($string){
+        $retorn = str_replace(",", ".", $string);
+        return $retorn;
+    }
+    
+    /**
+     * Funció per escapar els salts de linia en els retorns json d'una string
+     * @param $string
+     * @return String
+     */
+    public function salts($string){
+        $retorn = str_replace("\n","\\n",$string);
+        return $retorn;
+    }            
     
     /*
      * Mètode per loginarse
@@ -162,12 +200,16 @@ Class Database{
         }else{
             $select = "SELECT imatge FROM tipus_residu WHERE id = '".$id."'";
             $r2 = $this->conn->query($select);
-            $rs2 = $r2->fetch_assoc();
-            $arxiu = "/opt/lampp/htdocs/residueix/img/residus/tipus/" . $rs2["imatge"];
-            unlink($arxiu);
-            $delete = "DELETE FROM tipus_residu WHERE id = '".$id."'";
-            $r3 = $this->conn->query($delete);
-            return '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha eliminat el tipus de registre."}';
+            if($r2->num_rows > 0){
+                $rs2 = $r2->fetch_assoc();
+                $arxiu = "/opt/lampp/htdocs/residueix/img/residus/tipus/" . $rs2["imatge"];
+                unlink($arxiu);
+                $delete = "DELETE FROM tipus_residu WHERE id = '".$id."'";
+                $r3 = $this->conn->query($delete);
+                return '{"codi_error":"0","accio":"baixa","descripcio":"S\'ha eliminat el tipus de registre."}';
+            }else{
+                return $this->e["84"];    
+            }
         }     
        
     }
@@ -221,34 +263,49 @@ Class Database{
      * Mètode per recuperar les poblacions (pot ser filtar pre provincia)
      * @Params: $provincia (opcional).
     */
-    public function llistaPoblacions($provincia){
+    public function llistatPoblacions($provincia){
+        
+        // Conrol de paràmetre provincia
         if(is_null($provincia)){
+            // Sense paràmetre
             $select = "SELECT po.id as id, po.nom as nom, po.provincia as id_provincia, ";
             $select .= "pr.nom as nom_provincia ";
             $select .= "FROM poblacions po ";
             $select .= "LEFT JOIN provincies pr ON pr.id = po.provincia ";
             $select .= "ORDER BY po.nom";
         }else{
+            // Amb paràmetre
             $select = "SELECT po.id as id, po.nom as nom, po.provincia as id_provincia, ";
             $select .= "pr.nom as nom_provincia ";
             $select .= "FROM poblacions po ";
             $select .= "LEFT JOIN provincies pr ON pr.id = po.provincia ";
             $select .= "WHERE po.provincia = ".$provincia." ";
             $select .= "ORDER BY po.nom"; 
-        }        $r = $this->conn->query($select);
-        if($r->num_rows > 0){
-            $cont = 0;
-            $json = '{"codi_error":"0","llistat":[';
-            while($rs = $r->fetch_assoc()){
-                $cont++;
-                if($cont!=1){ $json .= ",";}
-                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","id_provincia":"'.$rs["id_provincia"].'","nom_provincia":"'.$rs["nom_provincia"].'"}';
-            } 
-            $json .= ']}';
-            return $json;
-        }else{
-            return null;
-        }
+        }   
+        
+        // Control d'errors
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        try {
+            $r = $this->conn->query($select);
+            if($r->num_rows > 0){
+                $cont = 0;
+                $json = '{"codi_error":"0","llistat":[';
+                while($rs = $r->fetch_assoc()){
+                    $cont++;
+                    if($cont!=1){ $json .= ",";}
+                    $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","id_provincia":"'.$rs["id_provincia"].'","nom_provincia":"'.$rs["nom_provincia"].'"}';
+                } 
+                $json .= ']}';
+                return $json;
+            }else{
+                return '{"codi_error":"0","llistat":[]}';
+            }
+        } catch (Exception $ex) {
+            $retorn = $this->e["77"];
+            $retorn .= $this->format($exc);
+            $retorn .= $this->e["finalExcepcio"];
+            return $retorn;
+        }      
     }
     
     
@@ -379,7 +436,28 @@ Class Database{
         }
     }
     
-    
+    /*
+     * Mètode per recuperar el llistat de tipus d'usuari
+     * @Params: sense.
+    */
+    public function llistatTipusUsuari(){
+        
+        $select = "SELECT id, nom FROM tipus_usuari ORDER BY id ASC ";
+        $r = $this->conn->query($select);
+         if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ","; }
+                $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return '{"codi_error":"0","llistat":[]}';
+        }
+    } 
     
     /*
      * Mètode per recuperar els usuaris
@@ -789,7 +867,7 @@ Class Database{
         $insert .= "'".$imatge."'";
         $insert .= ")";
         if($this->conn->query($insert)){
-            return '{"codi_error":"0","descripcio":"Tipus de residu donat d\'alta"}';
+            return '{"codi_error":"0","descripcio":"Tipus de residu donat d\'alta","id":"'.$this->conn->insert_id.'"}';
         }else{
             return $this->e["41"];
         }
@@ -816,7 +894,7 @@ Class Database{
         $insert .= "'".$actiu."'";
         $insert .= ")";
         if($this->conn->query($insert)){
-            return '{"codi_error":"0","descripcio":"Residu donat d\'alta"}';
+            return '{"codi_error":"0","descripcio":"Residu donat d\'alta","id":"'.$this->conn->insert_id.'"}';
         }else{
             return $this->e["48"];
         }
@@ -943,7 +1021,7 @@ Class Database{
             while($rs = $r->fetch_assoc()){
                 $cont++;
                 if($cont!=1){ $json .= ","; }
-                $json .= '{"id_punt":"'.$rs["idPunt"].'","nom_pun":"'.$rs["nomPunt"].'","descripcio":"'.$rs["descripcioPunt"].'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPUnt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
+                $json .= '{"id_punt":"'.$rs["idPunt"].'","nom_punt":"'.$rs["nomPunt"].'","descripcio":"'.$this->salts($rs["descripcioPunt"]).'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPunt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
             } 
             $json .= ']}';
             return $json;
@@ -971,14 +1049,310 @@ Class Database{
         
         if($r->num_rows > 0){
             $rs = $r->fetch_assoc();
-            $json .= '{"id_punt":"'.$rs["idPunt"].'","nom_pun":"'.$rs["nomPunt"].'","descripcio":"'.$rs["descripcioPunt"].'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPUnt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
-            return $json;
+            return '{"codi_error":"0","id_punt":"'.$rs["idPunt"].'","nom_punt":"'.$rs["nomPunt"].'","descripcio":"'.$this->salts($rs["descripcioPunt"]).'","imatge":"'.$rs["imatgePunt"].'","latitud":"'.$rs["latitudPunt"].'","longitud":"'.$rs["longitudPunt"].'","carrer":"'.$rs["carrerPunt"].'","cp":"'.$rs["cpPunt"].'","horari":"'.$rs["horariPunt"].'","actiu":"'.$rs["actiuPunt"].'","id_poblacio":"'.$rs["idPoblacio"].'","nom_poblacio":"'.$rs["nomPoblacio"].'","id_provincia":"'.$rs["idProvincia"].'","nom_provincia":"'.$rs["nomProvincia"].'"}';
+            
         }else{
             return $this->e["68"];
         }
     } 
 
+    /*
+     * Mètode per donar d'alta un punt re recollida
+     * @Params: nom, descripció, imatge, latitud, longitud, carrer, cp, poblacio, horari i actiu del punt de recollida.
+    */
+    public function altaPunt($nom,$descripcio,$imatge,$latitud,$longitud,$carrer,$cp,$poblacio,$horari,$actiu){
+    
+        $insert = "INSERT INTO punts_recollida ";
+        $insert .= "(nom,descripcio,imatge,latitud,longitud,carrer,cp,poblacio,horari,actiu) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$this->format($nom)."',";
+        $insert .= "'".$this->conn->real_escape_string($descripcio)."',";
+        $insert .= "'".$imatge."',";
+        if(is_null($latitud)){ $insert .= "null,"; }else{ $insert .= "'".$this->format($latitud)."',"; }
+        if(is_null($longitud)){ $insert .= "null,"; }else{ $insert .= "'".$this->format($longitud)."',";  }
+        if(is_null($carrer)){ $insert .= "null,"; }else{ $insert .= "'".$this->format($carrer)."',";  }
+        if(is_null($cp)){ $insert .= "null,"; }else{ $insert .= "'".$cp."',";  }
+        if(is_null($poblacio)){ $insert .= "null,"; }else{ $insert .= "'".$poblacio."',";  }
+        if(is_null($horari)){ $insert .= "null,"; }else{ $insert .= "'".$this->format($horari)."',"; }
+        $insert .= "'".$actiu."'";
+        $insert .= ")";
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        try {
+            $this->conn->query($insert);  
+            return '{"codi_error":"0","descripcio":"Punt de recollida donat d\'alta","id":"'.$this->conn->insert_id.'"}'; 
+        } catch (Exception $exc) {
+            $retorn = $this->e["72"];
+            $retorn .= $this->format($exc);
+            $retorn .= $this->e["finalExcepcio"];
+            return $retorn;
+        } 
+        
+    }
+    
+    /**
+     * Mètode per modificar un punt de recollida
+     * @param type $id
+     * @param type $nom
+     * @param type $descripcio
+     * @param type $imatge
+     * @param type $latitud
+     * @param type $longitud
+     * @param type $carrer
+     * @param type $cp
+     * @param type $poblacio
+     * @param type $horari
+     * @param type $actiu
+     * @return string
+     */
+    public function modificarPunt($id,$nom,$descripcio,$imatge,$latitud,$longitud,$carrer,$cp,$poblacio,$horari,$actiu){
+        
+        // Mirem la imatge que té
+        $select = "SELECT imatge FROM punts_recollida WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            if($imatge != null){
+                unlink("/opt/lampp/htdocs/residueix/img/punts/" . $rs["imatge"]);
+            }
+            $canvis = "";        
+            $update = "UPDATE punts_recollida ";
+            $update .= "SET ";
+            $update .= "id = '".$id."' ";
+            if(!is_null($nom)){
+                if($nom!=""){
+                    $update .= ", nom = '".$this->format($nom)."' ";
+                }else{
+                    $canvis .= "1";
+                }
+            }
+            if(!is_null($descripcio)){
+                if($descripcio != ""){
+                    $update .= ", descripcio = '".$this->conn->real_escape_string($descripcio)."' ";
+                }else{
+                    $canvis .= "2";
+                }
+            }
+            if($imatge != null){
+                $update .= ", imatge = '".$imatge."' ";
+            }
+            if(!is_null($latitud)){
+                if($latitud != ""){
+                    $update .= ", latitud = '".$this->format($latitud)."' ";
+                }else{
+                    $update .= ", latitud = null "; 
+                }
+            }
+            if(!is_null($longitud)){
+                if($longitud!= ""){
+                    $update .= ", longitud = '".$this->format($longitud)."' ";
+                }else{
+                    $update .= ", longitud = null ";
+                }
+            }
+            if(!is_null($carrer)){
+                if($carrer != ""){
+                    $update .= ", carrer = '".$this->format($carrer)."' ";
+                }else{
+                    $update .= ", carrer = null ";
+                }
+            }
+            if(!is_null($cp)){
+                if($cp != ""){
+                    $update .= ", cp = '".$this->format($cp)."' ";
+                }else{
+                    $update .= ", cp = null ";
+                }
+            }
+            if(!is_null($poblacio)){
+                if($poblacio!=''){
+                    $update .= ", poblacio = '".$this->format($poblacio)."' ";
+                }else{
+                    $update .= ", poblacio = null ";
+                }
+            }
+            if(!is_null($horari)){
+                if($horari != ""){
+                    $update .= ", horari = '".$this->format($horari)."' ";    
+                }else{
+                    $update .= ", horari = null ";    
+                }
+            
+            }
+            if(!is_null($actiu)){ $update .= ", actiu = '".$this->format($actiu)."' "; }
+            $update .= "WHERE id = '".$id."'";
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            try {
+                $this->conn->query($update);  
+                switch($canvis){
+                    case "1":
+                        return '{"codi_error":"0","descripcio":"Punt de recollida modificat correctament excepte el nom que és un camp obligatori i no es pot deixar buit."}';
+                        break;
+                    case "12":
+                        return '{"codi_error":"0","descripcio":"Punt de recollida modificat correctament excepte el nom i la descripció que són camps obligatoris i no es poden deixar buits."}';
+                        break;
+                    case "2":
+                        return '{"codi_error":"0","descripcio":"Punt de recollida modificat correctament excepte la descripció que és un camp obligatori i no es pot deixar buit."}';
+                        break;
+                    default:
+                        return '{"codi_error":"0","descripcio":"Punt de recollida modificat correctament."}';
+                        break;
+                }
+            } catch (Exception $exc) {
+                $retorn = $this->e["72"];
+                $retorn .= $this->format($exc);
+                $retorn .= $this->e["finalExcepcio"];
+                return $retorn;
+            }
+        }else{
+            return $this->e["76"];
+        }
+        
+          
+    }
 
+    /**
+     * Mètode per donar de baixa un punt de recollida
+     * @param $id
+     * @return string
+     */
+    public function baixaPunt($id){
+        $select = "SELECT * FROM punts_recollida WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            if($rs["actiu"]=="0"){
+                return '{"codi_error":"0","descripcio":"Aquest punt de recollida ja està donat de baixa."}';
+            }else{
+                $update = "UPDATE punts_recollida ";
+                $update .= "SET actiu = '0' ";
+                $update .= "WHERE id = '".$id."'";
+                mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+                try{ 
+                    $this->conn->query($update);
+                    return '{"codi_error":"0","descripcio":"Punt de recollida donat de baixa correctament."}'; 
+                } catch (Exception $exc) {
+                    $retorn = $this->e["72"];
+                    $retorn .= $this->format($exc);
+                    $retorn .= $this->e["finalExcepcio"];
+                    return $retorn;
+                }
+            }
+        }else{
+            return $this->e["76"];   
+        }
+    }
+    
+// Recollida 
+// ************************************************************************* 
+    
+    public function altaTransaccio($punt, $usuari, $total){
+      
+        $data = new DateTime();
+        $dataActual = $data->format('Y-m-d H:i:s');
+        
+        $insert = "INSERT INTO transaccio (emisor, receptor, total, data, tipus) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$punt."',";
+        $insert .= "'".$usuari."',";
+        $insert .= "'". str_replace(",",".", $total)."',";
+        $insert .= "'".str_replace(": ",":",$dataActual)."',";
+        $insert .= "'1'";
+        $insert .= ")";
+        
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        try{
+            $this->conn->query($insert);
+            
+            $idTransaccio = $this->conn->insert_id;
+            return $idTransaccio;
+        
+        } catch (Exception $exc) {
+            return "0";
+        }
+        
+    }
+    
+    public function baixaPermanentTransaccio($id){
+        $this->conn->query("DELETE FROM transaccio WHERE id = '".$id."'"); 
+        
+    }
+    
+    public function altaRecollida($id_residu,$quantitat,$valor,$idTransaccio){
+        $insert = "INSERT INTO recollida (id_residu,quantitat,valor,transaccio) VALUES ";
+        $insert .= "(";
+        $insert .= "'". $id_residu ."',";
+        $insert .= "'". str_replace(",",".", $quantitat)."',";
+        $insert .= "'". str_replace(",",".", $valor)."',";
+        $insert .= "'". $idTransaccio ."'";
+        $insert .= ")";
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        try{ 
+            $this->conn->query($insert);
+            return true;
+        } catch (Exception $exc) {
+            return false;
+        }
+    }
+    
+    public function afegirSaldo($idUsuari,$saldo){
+        $select = "SELECT import FROM saldo WHERE usuari = '".$idUsuari."' ";
+        $this->conn->query($select);
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+           
+            
+            
+            $saldoTotal = floatval($this->numero($rs["import"])) + floatval($this->numero($saldo));
+            
+            $update = "UPDATE saldo SET import = '".$this->numero($saldoTotal)."' WHERE usuari = '".$idUsuari."' ";
+            
+            
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            try{ 
+                $this->conn->query($update);
+                return true;
+            } catch (Exception $exc) {
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+    
+    /**
+     * Mètode per eliminar un registre de la base de dades de manera permanent. Només utilitzada en les proves unitàries.
+     * @param type $seccio secció de la que es vol eliminar el registre.
+     */
+    public function eliminarRegistre($seccio,$id){
+        switch($seccio){
+            case "tipusresidus":
+                if(!is_null($id)){
+                    $delete = "DELETE FROM tipus_residu where id = '".$id."'";
+                    $this->conn->query($delete);
+                    echo '{"codi_error":"0","descripcio":"Tipus de residu eliminat correctament."}';
+                }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
+                break; 
+            case "residu":
+                if(!is_null($id)){
+                    $delete = "DELETE FROM residus where id = '".$id."'";
+                    $this->conn->query($delete);
+                    echo '{"codi_error":"0","descripcio":"Residu eliminat correctament."}';
+                }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
+                break; 
+            case "punt":
+                if(!is_null($id)){
+                    $delete = "DELETE FROM punts_recollida where id = '".$id."'";
+                    $this->conn->query($delete);
+                    echo '{"codi_error":"0","descripcio":"Punt de recollida eliminat correctament."}';
+                }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
+                break;     
+            default:
+                echo '{"codi_error":"1","descripcio":"No s\'ha eliminat res perquè la secció no és vàlida."}';
+                break;
+        }
+    }
+    
 }
 
 ?>

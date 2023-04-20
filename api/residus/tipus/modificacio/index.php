@@ -23,7 +23,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     
                     if(isset($_POST["permis"])){ $permis = $_POST["permis"]; }else{ $permis = null; }
                     if(isset($_POST["id"])){ $id = $_POST["id"]; }else{ $id = null; }
-                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; }else{ $nom = null; }
+                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; if( trim($nom) == ""){ $nom = null; } }else{ $nom = null; }
                     if(isset($_FILES["imatge"])){ $imatge = true; }else{ $imatge = false; }
                     
                     if($permis == "1" || $permis == "2"){
@@ -43,7 +43,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                                echo $db->modificarTipusResidu($id,$nom,null); 
                             } 
                        }else{
-                            echo $errors["44"];
+                            echo $errors["47"];
                         }
                         
                     }else{

@@ -22,7 +22,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                 if($tokenActiu == true){
                     
                     if(isset($_POST["permis"])){ $permis = $_POST["permis"]; }else{ $permis = null; }
-                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; }else{ $nom = null; }
+                    if(isset($_POST["nom"])){ $nom = $_POST["nom"]; if($nom==""){ $nom = null; } }else{ $nom = null; }
                     if(isset($_FILES["imatge"])){ $imatge = true; }else{ $imatge = false; }
                     
                     if($permis == "1" || $permis == "2"){

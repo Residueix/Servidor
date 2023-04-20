@@ -50,7 +50,7 @@ $errors = array(
     "44" => '{"codi_error":"tipus_residu_3","error":"No s\'ha pogut carregar l\'imatge."}',
     "45" => '{"codi_error":"tipus_residu_4","error":"Falten paràmetres per poder donar d\'alta un tipus de residu. Recorda que com a mínim ha d\'haver: nom i imatge."}',
     "46" => '{"codi_error":"tipus_residu_5","error":"Només pot donar d\'alta usuaris administradors i treballadors."}',
-    "47" => '{"codi_error":"tipus_residu_6","error":"Falten paràmetres per poder modificar un tipus de residu. Recorda que com a mínim ha d\'haver: id, nom i imatge."}',
+    "47" => '{"codi_error":"tipus_residu_6","error":"Falten paràmetres per poder modificar un tipus de residu. Recorda que com a mínim ha d\'haver: id, nom i imatge (opcional)."}',
     "48" => '{"codi_error":"residu_1","error":"No s\'ha pogut donar d\'alta el residu."}',
     "49" => '{"codi_error":"residu_2","error":"No s\'ha pogut carregar l\'imatge."}',
     "50" => '{"codi_error":"residu_3","error":"Falten paràmetres per poder donar d\'alta un residu. Recorda que com a mínim ha d\'haver: tipus, nom, imatge, descripcio, valor i actiu."}',
@@ -68,12 +68,27 @@ $errors = array(
     "62" => '{"codi_error":"residu_12","error":"L\'id passat com a paràmetre no correspon a cap residu."}',
     "63" => '{"codi_error":"residu_13","error":"Falten paràmetres per modificar el residu."}',
     "64" => '{"codi_error":"residu_14","error":"Error al carregar la imatge per modificar el residu."}',
-    "65" => '{"codi_error":"punst_recollida_1","error":"No té permís per veure el llistat de punts de recollida"}',
+    "65" => '{"codi_error":"punts_recollida_1","error":"No té permís per veure el llistat de punts de recollida"}',
     "66" => '{"codi_error":"token_10","error":"El token públic no és correcte."}',
-    "67" => '{"codi_error":"punst_recollida_2","error":"No s\'ha passat per paràmetre cap identificador (id)."}',
-    "68" => '{"codi_error":"punst_recollida_3","error":"El paràmetre passat com a identificador (id) no és vàlid o no retorna cap registre."}',
-    
-    
+    "67" => '{"codi_error":"punts_recollida_2","error":"No s\'ha passat per paràmetre cap identificador (id)."}',
+    "68" => '{"codi_error":"punts_recollida_3","error":"El paràmetre passat com a identificador (id) no és vàlid o no retorna cap registre."}',
+    "69" => '{"codi_error":"punts_recollida_4","error":"Només pot donar d\'alta usuaris administradors."}',
+    "70" => '{"codi_error":"punts_recollida_5","error":"Falten paràmetres per poder donar d\'alta un punt de recollida. Recorda que com a mínim ha d\'haver: nom, descripció, imatge, actiu."}',
+    "71" => '{"codi_error":"punts_recollida_6","error":"No s\'ha pogut carregar l\'imatge del punt de recollida."}',
+    "72" => '{"codi_error":"punts_recollida_7","error":"', // missatge per excepció.
+    "73" => '{"codi_error":"punts_recollida_8","error":"Falten paràmetres per poder modificar un punt de recollida. Recorda que com a mínim ha d\'haver: id."}',
+    "74" => '{"codi_error":"punts_recollida_9","error":"Només pot modificar usuaris administradors."}',
+    "75" => '{"codi_error":"punts_recollida_10","error":"Només pot donar de baixa usuaris administradors."}',
+    "76" => '{"codi_error":"punts_recollida_11","error":"L\'id passat com a paràmetre no correspon amb cap punt de recollida."}',
+    "77" => '{"codi_error":"poblacions_1","error":"', // missatge per excepció.
+    "78" => '{"codi_error":"recollida_1","error":"Només pot recollir usuaris treballadors."}',
+    "79" => '{"codi_error":"recollida_2","error":"No s\'ha rebut cap recollida vàlida."}',
+    "80" => '{"codi_error":"recollida_3","error":"Error en la introducció de la transacció."}',
+    "81" => '{"codi_error":"recollida_4","error":"Error en la introducció de la recollida."}',
+    "82" => '{"codi_error":"recollida_5","error":"', // missatge per excepció.
+    "83" => '{"codi_error":"recollida_6","error":"Error en la introducció del saldo de la recollida."}',
+    "84" => '{"codi_error":"tipus_residu_10","error":"Aquest tipus de residu no existeix a la base de dades."}',
+    "finalExcepcio" => '"}',
     
     
     

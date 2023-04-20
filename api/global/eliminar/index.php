@@ -21,11 +21,11 @@ switch($_SERVER["REQUEST_METHOD"]){
             // Control token vàlid
             if($_POST["token"] == $db->getToken()){
                 
-                // Paràmetres opcionals
-                if(isset($_POST["provincia"])){ $provincia =  $_POST["provincia"]; if($provincia==""){ $provincia = null;} }else{ $provincia = null; } 
+                // Paràmetres
+                if(isset($_POST["seccio"])){ $seccio =  $_POST["seccio"]; if($seccio==""){ $seccio = null;} }else{ $seccio = null; } 
+                if(isset($_POST["id"])){ $id =  $_POST["id"]; if($id==""){ $id = null;} }else{ $id = null; } 
                 
-                // Crida a la funció per mostrar el llistat
-                echo $db->llistatPoblacions($provincia);
+                echo $db->eliminarRegistre($seccio,$id);
                 
             }else{ echo $errors["66"]; }
             
