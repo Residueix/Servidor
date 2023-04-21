@@ -1346,7 +1346,16 @@ Class Database{
                     $this->conn->query($delete);
                     echo '{"codi_error":"0","descripcio":"Punt de recollida eliminat correctament."}';
                 }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
-                break;     
+                break; 
+            case "recollida":
+                if(!is_null($id)){
+                    $delete = "DELETE FROM transaccio where id = '".$id."'";
+                    $this->conn->query($delete);
+                    $delete = "DELETE FROM recollida where transaccio = '".$id."'";
+                    $this->conn->query($delete);
+                    echo '{"codi_error":"0","descripcio":"Transacció eliminada correctament."}';
+                }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
+                break; 
             default:
                 echo '{"codi_error":"1","descripcio":"No s\'ha eliminat res perquè la secció no és vàlida."}';
                 break;

@@ -25,7 +25,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     
                     // Recollim dades
                     if(isset($_POST["permis"])){ $permis = $_POST["permis"]; }else{ $permis = null; }
-                    if(isset($_POST["recollida"])){ $recollida = $_POST["recollida"]; }else{ $recollida = null; }
+                    if(isset($_POST["recollida"])){ $recollida = $_POST["recollida"]; if(trim($recollida)==""){$recollida=null;} }else{ $recollida = null; }
                     
                     // Control permís
                     if($permis == "2"){
@@ -33,6 +33,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                         // Control dades
                         if( !is_null($recollida) ){
                             
+                            // Comprovem el json
                             
                             $dades = json_decode($recollida);
                             
@@ -66,7 +67,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                                         }
                                     }
                                     if($estat){
-                                        echo '{"codi_error":"0","descripcio":"Recollida guardada correctament."}';
+                                        echo '{"codi_error":"0","descripcio":"Recollida guardada correctament.","id_transaccio":"'.$idTransaccio.'"}';
                                     }
                                     
                                     
