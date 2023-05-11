@@ -38,7 +38,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
                     // EL permís ha de ser 1 (usuari administrador) O 3 RESIDUENT
-                    if($permis == 1){
+                    if($permis == 1 || $permis == 3){
                         if(  ($id != null) && ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($telefon != null) &&  ($actiu != null) &&  ($carrer != null) && ($cp != null) && ($poblacio != null)){
                             if($tipus == 3){
                                 // Comprovem si aquest id ja té usuari

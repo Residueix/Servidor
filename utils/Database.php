@@ -468,7 +468,7 @@ Class Database{
         $select = "SELECT r.id as idResidu, r.tipus as idTipusResidu, r.nom as nomResidu, r.imatge as imatgeResidu, r.descripcio as descripcioResidu, r.valor as valorResidu, r.actiu as actiuResidu, tr.nom as nomTipusResidu, tr.imatge as imatgeTipusResidu ";
         $select .= "FROM residus r ";
         $select .= "LEFT JOIN tipus_residu tr ON tr.id = r.tipus ";
-        $select .= "ORDER BY r.nom ASC ";
+        $select .= "ORDER BY tr.nom ASC, r.nom ASC ";
         
         $r = $this->conn->query($select);
         if($r->num_rows > 0){
@@ -485,7 +485,7 @@ Class Database{
                 $json .= '"descripcio_residu":"'. str_replace("\n","\\n",$rs["descripcioResidu"]).'",';
                 $json .= '"valor_residu":"'.$rs["valorResidu"].'",';
                 $json .= '"actiu_residu":"'.$rs["actiuResidu"].'",';
-                $json .= '"nom_tipus_residu":"'.$rs["nomTipusResidu"].',",';
+                $json .= '"nom_tipus_residu":"'.$rs["nomTipusResidu"].'",';
                 $json .= '"imatge_tipus_residu":"'.$rs["imatgeTipusResidu"].'"';
                 $json .= '}';
             } 
@@ -1356,12 +1356,264 @@ Class Database{
                     echo '{"codi_error":"0","descripcio":"Transacció eliminada correctament."}';
                 }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
                 break; 
+            case "esdeveniment":
+                 if(!is_null($id)){
+                    $delete = "DELETE FROM esdeveniments where id = '".$id."'";
+                    $this->conn->query($delete);
+                    echo '{"codi_error":"0","descripcio":"Esdeveniment eliminat correctament."}';
+                }else{ echo '{"codi_error":"2","descripcio":"No s\'ha eliminat res perquè el id no és vàlid."}'; }
+                break; 
+            break;
             default:
                 echo '{"codi_error":"1","descripcio":"No s\'ha eliminat res perquè la secció no és vàlida."}';
                 break;
         }
     }
+ 
+// Esdeveniments
+// *************************************************************************    
+    
+    public function llistatEsdeveniments(){
+        
+    
+        $select = "SELECT ";
+        $select .= "e.id as idEsdeveniment, e.nom as nom, e.descripcio as descripcio, e.imatge as imatge, e.valor as valor, e.ubicacio as idUbicacio, e.data as data, e.actiu as actiu, e.aforament as aforament, pob.nom as nomPoblacio, pob.provincia as idProvincia, pro.nom as nomProvincia ";
+        $select .= "FROM esdeveniments e ";
+        $select .= "LEFT JOIN poblacions pob ON pob.id = e.ubicacio ";
+        $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
+        $select .= "ORDER BY data DESC ";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ","; }
+                $json .= '{"id":"'.$rs["idEsdeveniment"].'","nom":"'.$rs["nom"].'","descripcio":"'.$rs["descripcio"].'","imatge":"'.$rs["imatge"].'","valor":"'.$rs["valor"].'","idPoblacio":"'.$rs["idUbicacio"].'","data":"'.$rs["data"].'","actiu":"'.$rs["actiu"].'","aforament":"'.$rs["aforament"].'","nomPoblacio":"'.$rs["nomPoblacio"].'","idProvincia":"'.$rs["idProvincia"].'","nomProvincia":"'.$rs["nomProvincia"].'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return '{"codi_error":"0","llistat":[]}';
+        }
+    
+    }
+    
+    
+    public function altaEsdeveniment($nom,$descripcio,$valor,$aforament,$data,$hora,$poblacio,$nomFinalImatge,$actiu){
+        
+        $dataFormatejada = $data . ' ' . $hora;
+        
+        $insert = "INSERT INTO esdeveniments (nom, descripcio, valor, aforament, data, ubicacio, imatge, actiu) VALUES ";
+        $insert .= "(";
+        $insert .= "'".$this->format($nom)."',";
+        $insert .= "'".$this->conn->real_escape_string($descripcio)."',";
+        $insert .= "'".$valor."',";
+        $insert .= "'".$aforament."',";
+        $insert .= "'".$dataFormatejada."',";
+        $insert .= "'".$poblacio."',";
+        $insert .= "'".$nomFinalImatge."',";
+        $insert .= "'".$actiu."'";
+        $insert .= ")";
+        
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        try{ 
+            $this->conn->query($insert);
+            return '{"codi_error":"0","descripcio":"Esdeveniment donat d\'alta","id":"'.$this->conn->insert_id.'"}'; 
+        } catch (Exception $exc) {
+            $retorn = $this->e["89"];
+            $retorn .= $this->format($exc);
+            $retorn .= $this->e["finalExcepcio"];
+            return $retorn;
+        }
+    }
+    
+    /*
+     * Mètode per recuperar un punt esdeveniment determinat.
+     * @Params: id esdeveniment.
+    */
+    public function consultaEsdeveniment($id){
+        
+        $select = "SELECT ";
+        $select .= "e.id as idEsd, e.nom as nomEsd, e.descripcio as descripcioEsd, e.imatge as imatgeEsd, e.data as dataEsd, e.ubicacio as ubicacioEsd, e.valor as valorEsd, e.aforament as aforamentEsd, e.actiu as actiuEsd, ";
+        $select .= "pob.nom as nomPoblacio, pob.provincia as idProvincia, ";
+        $select .= "pro.nom as nomProvincia ";
+        $select .= "FROM esdeveniments e ";
+        $select .= "LEFT JOIN poblacions pob ON pob.id = e.ubicacio ";
+        $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
+        $select .= "WHERE e.id = '".$id."' ";
+        
+        $r = $this->conn->query($select);
+        
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            return '{"codi_error":"0","id":"'.$rs["idEsd"].'","nom":"'.$rs["nomEsd"].'","descripcio":"'.$this->salts($rs["descripcioEsd"]).'","imatge":"'.$rs["imatgeEsd"].'","data":"'.$rs["dataEsd"].'","ubicacio":"'.$rs["ubicacioEsd"].'","valor":"'.$rs["valorEsd"].'","aforament":"'.$rs["aforamentEsd"].'","actiu":"'.$rs["actiuEsd"].'","nomPoblacio":"'.$rs["nomPoblacio"].'","idProvincia":"'.$rs["idProvincia"].'","nomProvincia":"'.$rs["nomProvincia"].'"}';
+            
+        }else{
+            return $this->e["91"];
+        }
+    }
+    
+    
+    /**
+     * Mètode per donar de baixa un esdeveniment
+     * @param $id
+     * @return string
+     */
+    public function baixaEsdeveniment($id){
+        $select = "SELECT * FROM esdeveniments WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            if($rs["actiu"]=="0"){
+                return '{"codi_error":"0","descripcio":"Aquest esdeveniment ja està donat de baixa."}';
+            }else{
+                $update = "UPDATE esdeveniments ";
+                $update .= "SET actiu = '0' ";
+                $update .= "WHERE id = '".$id."'";
+                mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+                try{ 
+                    $this->conn->query($update);
+                    return '{"codi_error":"0","descripcio":"Esdeveniment donat de baixa correctament."}'; 
+                } catch (Exception $exc) {
+                    $retorn = $this->e["89"];
+                    $retorn .= $this->format($exc);
+                    $retorn .= $this->e["finalExcepcio"];
+                    return $retorn;
+                }
+            }
+        }else{
+            return $this->e["92"];   
+        }
+    }
+
+        
+    public function llistatAssistents(){
+        
+    
+        $select = " SELECT ";
+        $select .= " a.id as idAssistens, a.esdeveniment as idEsdeveniment, a.usuari as idUsuari, a.acompanyants as acompanyants ";
+        $select .= " ,e.id as idEsdeveniment, e.nom as nomEsdeveniment, e.data as dataEsdeveniment, e.ubicacio as idUbicacio, e.aforament as aforament, e.valor as valor ";
+        $select .= " ,u.id as idUsuari ,u.tipus as idTipus, u.email as emailUsuari, u.telefon as telefonUsuari, u.nom as nomUsuari, u.cognom1 as cognom1Usuari, u.cognom2 as cognom2Usuari ";
+        $select .= " ,tu.nom as nomTipus, pob.nom as nomPoblacio, pob.id as idPoblacio, pro.nom as nomProvincia, pro.id as idProvincia ";
+        $select .= "FROM assistents a ";
+        $select .= "LEFT JOIN esdeveniments e ON e.id = a.esdeveniment ";
+        $select .= "LEFT JOIN poblacions pob ON e.ubicacio = pob.id ";
+        $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
+        $select .= "LEFT JOIN usuaris u ON u.id = a.usuari ";
+        $select .= "LEFT JOIN tipus_usuari tu ON tu.id = u.tipus ";
+        
+        
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ","; }
+                $json .= '{"id":"'.$rs["idEsdeveniment"].'",'
+                        . '"id_assistent":"'.$rs["idAssistens"].'",'
+                        . '"id_usuari":"'.$rs["idUsuari"].'",'
+                        . '"acompanyants":"'.$rs["acompanyants"].'",'
+                        . '"nom":"'.$rs["nomEsdeveniment"].'",'
+                        . '"data":"'.$rs["dataEsdeveniment"].'",'
+                        . '"ubicacio":"'.$rs["idUbicacio"].'",'
+                        . '"aforament":"'.$rs["aforament"].'",'
+                        . '"valor":"'.$rs["valor"].'",'
+                        . '"tipus_usuari":"'.$rs["idTipus"].'",'
+                        . '"nom_tipus_usuari":"'.$rs["nomTipus"].'",'
+                        . '"email_usuari":"'.$rs["emailUsuari"].'",'
+                        . '"telefon_usuari":"'.$rs["telefonUsuari"].'",'
+                        . '"nom_usuari":"'.$rs["nomUsuari"].'",'
+                        . '"cognom1_usuari":"'.$rs["cognom1Usuari"].'",'
+                        . '"cognom2_usuari":"'.$rs["cognom2Usuari"].'",'
+                        . '"nom_poblacio":"'.$rs["nomPoblacio"].'",'
+                        . '"id_poblacio":"'.$rs["idPoblacio"].'",'
+                        . '"nom_provincia":"'.$rs["nomProvincia"].'",'
+                        . '"id_provicia":"'.$rs["idProvincia"].'",'
+                        .'"}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return '{"codi_error":"0","llistat":[]}';
+        }
+    
+    }
+    
+    public function modificarEsdeveninent($id,$nom,$descripcio,$valor,$aforament,$data,$hora,$poblacio,$imatge,$actiu){
+        
+        
+         $dataFormatejada = $data . ' ' . $hora;
+         
+        // Mirem la imatge que té
+        $select = "SELECT imatge FROM esdeveniments WHERE id = '".$id."'";
+        $r = $this->conn->query($select);
+        if($r->num_rows > 0){
+            $rs = $r->fetch_assoc();
+            if($imatge != null){
+                unlink("/opt/lampp/htdocs/residueix/img/esdeveniments/" . $rs["imatge"]);
+            }    
+            $update = "UPDATE esdeveniments ";
+            $update .= "SET ";
+            $update .= "id = '".$id."' ";
+            if(!is_null($nom)){
+                if($nom!=""){
+                    $update .= ", nom = '".$this->format($nom)."' ";
+               
+                }
+            }
+            if(!is_null($descripcio)){
+                if($descripcio != ""){
+                    $update .= ", descripcio = '".$this->conn->real_escape_string($descripcio)."' ";
+                
+                }
+            }
+            if($imatge != null){
+                $update .= ", imatge = '".$imatge."' ";
+            }
+            if(!is_null($data)){
+                if($data!= ""){
+                    $update .= ", data = '".$dataFormatejada."' ";
+                }
+            }
+            if(!is_null($poblacio)){
+                if($poblacio != ""){
+                    $update .= ", ubicacio = '".$poblacio."' ";
+                }
+            }
+            if(!is_null($valor)){
+                if($valor != ""){
+                    $update .= ", valor = '".$this->numero($valor)."' ";
+                }
+            }
+            if(!is_null($aforament)){
+                if($aforament!=''){
+                    $update .= ", aforament = '".$aforament."' ";
+                }
+            }
+            if(!is_null($actiu)){ $update .= ", actiu = '".$this->format($actiu)."' "; }
+            $update .= "WHERE id = '".$id."'";
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            try {
+                $this->conn->query($update);  
+                return '{"codi_error":"0","descripcio":"Esdeveniment modificat correctament."}';
+            } catch (Exception $exc) {
+                $retorn = $this->e["97"];
+                $retorn .= $this->format($exc);
+                $retorn .= $this->e["finalExcepcio"];
+                return $retorn;
+            }
+        }else{
+            return $this->e["98"];
+        }
+        
+          
+    }
+    
     
 }
+
+
 
 ?>

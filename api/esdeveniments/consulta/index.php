@@ -1,5 +1,5 @@
 <?php
-// API > global > tipusadherit
+// API > esdeveniments > consulta
 // Javier Valverde Lozano
 // Classes necesàries
 require ('../../../utils/errors.php');
@@ -15,24 +15,22 @@ switch($_SERVER["REQUEST_METHOD"]){
     case 'POST':
         // Control token
         if(isset($_POST["token"])){
-            
-            // Control token vàlid
-            if($_POST["token"] == $db->getToken()){
-                        
-                        $llistatTipusAdherit = $db-> llistatTipusAdherit();
-                        echo $llistatTipusAdherit;
-                        
-            }else{ echo $errors["66"]; }
-            
+            if(isset($_POST["id"])){ $id = $_POST["id"]; }else{ $id = null; }
+            if($id!=null){
+                if($_POST["token"] == $db->getToken()){
+                    echo $db->consultaEsdeveniment($id);
+                }else{
+                    echo $errors["66"];   
+                }
+            }else{ echo $errors["90"];}
         }else{ echo $errors["15"]; }
-        
     break;
     
     // Opció per defecte, no és cap de les anteriors. Error.
     default:
         echo $errors["8"];
     break;
-    
+
 }
 
 ?>

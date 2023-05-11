@@ -88,6 +88,23 @@ $errors = array(
     "82" => '{"codi_error":"recollida_5","error":"', // missatge per excepció.
     "83" => '{"codi_error":"recollida_6","error":"Error en la introducció del saldo de la recollida."}',
     "84" => '{"codi_error":"tipus_residu_10","error":"Aquest tipus de residu no existeix a la base de dades."}',
+    "85" => '{"codi_error":"aplicacio_1","error":"No s\'ha enviat el mètode correcte."}',    
+    "86" => '{"codi_error":"esdeveniments_1","error":"Només pot donar d\'alta usuaris administradors."}',
+    "87" => '{"codi_error":"esdeveniments_2","error":"Falten paràmetres per poder donar d\'alta un esdeveniment. Recorda que com a mínim ha d\'haver: nom, descripció, valor, aforament, data, hora, població, imatge, actiu."}',
+    "88" => '{"codi_error":"esdeveniments_3","error":"No s\'ha pogut carregar l\'imatge de l\'esdeveniment."}',
+    "89" => '{"codi_error":"esdeveniments_4","error":"', // missatge per excepció.
+    "90" => '{"codi_error":"esdeveniments_5","error":"No s\'ha passat per paràmetre cap identificador (id)."}',
+    "91" => '{"codi_error":"esdeveniments_6","error":"El paràmetre passat com a identificador (id) no és vàlid o no retorna cap registre."}',
+    "92" => '{"codi_error":"esdeveniments_7","error":"L\'id passat com a paràmetre no correspon amb cap esdeveniment."}',
+    "93" => '{"codi_error":"esdeveniments_8","error":"Només pot modificar esdeveniments els usuaris administradors."}',
+    "94" => '{"codi_error":"esdeveniments_9","error":"Falten paràmetres per poder modificar un esdeveniment. Recorda que com a mínim ha d\'haver: id, nom, descripció, valor, aforament, data, hora, població, imatge, actiu."}',
+    "95" => '{"codi_error":"esdeveniments_10","error":"Falten paràmetres per poder modificar un esdeveniment. Recorda que com a mínim ha d\'haver: id."}',
+    "96" => '{"codi_error":"esdeveniments_11","error":"No s\'ha pogut carregar l\'imatge del esdeveniment."}',
+    "97" => '{"codi_error":"esdeveniments_12","error":"', // missatge per excepció.
+    "98" => '{"codi_error":"esdeveniments_13","error":"L\'id passat com a paràmetre no correspon amb cap esdeveniment."}',
+    "99" => '{"codi_error":"esdeveniments_14","error":"Només pot modificar usuaris administradors."}',
+    "100" => '{"codi_error":"esdeveniments_15","error":"Falten paràmetres per poder donar d\'alta un esdeveniment. Recorda que com a mínim ha d\'haver: id, nom, descripció, valor, aforament, data, hora, població, imatge, actiu."}',
+    
     "finalExcepcio" => '"}',
     
     
@@ -96,7 +113,7 @@ $errors = array(
     
     
     
-    "98" => '{"codi_error":"usuaris_3","error":"No té permís per donar d\'alta un usuari."}'
+    "1000" => '{"codi_error":"usuaris_3","error":"No té permís per donar d\'alta un usuari."}'
     
 );
 

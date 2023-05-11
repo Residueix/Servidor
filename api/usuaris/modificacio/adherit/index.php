@@ -42,7 +42,7 @@ switch($_SERVER["REQUEST_METHOD"]){
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
                     // EL permís ha de ser 1
-                    if($permis == 1){
+                    if($permis == 1 || $permis == 4){
                         if( ($id != null) && ($actiu != null) &&($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($carrer != null) && ($cp != null) && ($poblacio != null) && ($horari != null) && ($nomAdherit != null) && ($tipusAdherit != null)){
                             if($tipus == 4){
                                 // Comprovem si aquest id ja té usuari

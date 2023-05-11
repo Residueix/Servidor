@@ -34,8 +34,8 @@ switch($_SERVER["REQUEST_METHOD"]){
                     // control
                     if(isset($_POST["permis"])){ $permis =  $_POST["permis"]; }else{ $permis = null; } 
                     
-                    // EL permís ha de ser 1 (usuari administrador)
-                    if($permis == 1){
+                    // EL permís ha de ser 1 (usuari administrador) o 2 treballador
+                    if($permis == 1 || $permis == 2){
                         if( ($id != null)  && ($email != null) && ($password != null) && ($nom != null) && ($cognom1 != null) && ($tipus != null) && ($telefon != null) && ($actiu != null)){
                             if($tipus == 2){
                                 // Comprovem si aquest id ja té usuari
