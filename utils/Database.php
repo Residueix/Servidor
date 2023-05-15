@@ -293,7 +293,11 @@ Class Database{
                 while($rs = $r->fetch_assoc()){
                     $cont++;
                     if($cont!=1){ $json .= ",";}
-                    $json .= '{"id":"'.$rs["id"].'","nom":"'.$rs["nom"].'","id_provincia":"'.$rs["id_provincia"].'","nom_provincia":"'.$rs["nom_provincia"].'"}';
+                    $json .= '{"id":"'.$rs["id"].'",'
+                            . '"nom":"'.$rs["nom"].'",'
+                            . '"id_provincia":"'.$rs["id_provincia"].'",'
+                            . '"nom_provincia":"'.$rs["nom_provincia"].''
+                            . '"}';
                 } 
                 $json .= ']}';
                 return $json;
@@ -1488,7 +1492,7 @@ Class Database{
     }
 
         
-    public function llistatAssistents(){
+    public function llistatAssistents($id){
         
     
         $select = " SELECT ";
@@ -1502,6 +1506,7 @@ Class Database{
         $select .= "LEFT JOIN provincies pro ON pro.id = pob.provincia ";
         $select .= "LEFT JOIN usuaris u ON u.id = a.usuari ";
         $select .= "LEFT JOIN tipus_usuari tu ON tu.id = u.tipus ";
+        $select .= "WHERE a.esdeveniment = '".$id."'";
         
         
         $r = $this->conn->query($select);
@@ -1530,8 +1535,8 @@ Class Database{
                         . '"nom_poblacio":"'.$rs["nomPoblacio"].'",'
                         . '"id_poblacio":"'.$rs["idPoblacio"].'",'
                         . '"nom_provincia":"'.$rs["nomProvincia"].'",'
-                        . '"id_provicia":"'.$rs["idProvincia"].'",'
-                        .'"}';
+                        . '"id_provicia":"'.$rs["idProvincia"].'"'
+                        .'}';
             } 
             $json .= ']}';
             return $json;
@@ -1611,6 +1616,68 @@ Class Database{
           
     }
     
+    
+   public function consultaTransaccions($id){
+        
+       /*
+        $select = "SELECT t.id as idTransaccio, t.emissor as idEmissor, t.receptor as idReceptor, t.total as total, t.tipus as idTipus ";
+        $select .= ",tt.nom as nomTipus ";
+        $select .= ",ue.nom as nomEmissor, ue.cognom1 as cognom1Emissor, ue.cognom2 as cognom2Emissor ";
+        $select .= ",ur.nom as nomReceptor, ur.congom1 as cognom1Receptor, ur,cognom2 as cognom2Receptor ";
+        $select .= "FROM transaccions t ";
+        $select .= "LEFT JOIN tipus_transaccions tt ON tt.id = t.tipus ";
+        $select .= "LEFT JOIN usuaris ue ON ue.id = t.emissor ";
+        $select .= "LEFT JOIN usuaris ur ON ur.id = t.receptor ";
+        $select .= "WHERE ( (t.emissor = '".$id."') OR  (t.receptor = '".$id."') ) AND t.tipus = '1' ";
+        */
+       
+       $select = "SELECT t.id as idTransaccio, t.data as data, pr.nom as nomEmisor, CONCAT(ur.nom, ' ', ur.cognom1, ' ', ur.cognom2) as nomReceptor, t.total as total, tt.nom as nomTipusTransaccio ";
+       $select .= "FROM transaccio t ";
+       $select .= "LEFT JOIN tipus_transaccio tt ON tt.id = t.tipus ";
+       $select .= "LEFT JOIN punts_recollida pr ON pr.id = t.emisor ";
+       $select .= "LEFT JOIN usuaris ur ON ur.id = t.receptor ";
+       $select .= "WHERE t.receptor = '".$id."' AND t.tipus = '1' ";
+       
+       $select .= "UNION ";
+       
+       $select .= "SELECT t.id as idTransaccio, t.data as data, CONCAT(ue.nom, ' ',  ue.cognom1, ' ', ue.cognom2) as nomEmisor, CONCAT(ur.nom, ' ', ur.cognom1, ' ', ur.cognom2) as nomReceptor, t.total as total, tt.nom as nomTipusTransaccio ";
+       $select .= "FROM transaccio t ";
+       $select .= "LEFT JOIN tipus_transaccio tt ON tt.id = t.tipus ";
+       $select .= "LEFT JOIN usuaris ue ON ue.id = t.emisor ";
+       $select .= "LEFT JOIN usuaris ur ON ur.id = t.receptor ";
+       $select .= "WHERE t.emisor = '".$id."' AND t.tipus IN ('2','3','4') ";
+       
+       $select .= "UNION ";
+       
+       $select .= "SELECT t.id as idTransaccio, t.data as data, e.nom as nomEmisor, CONCAT(ur.nom, ' ', ur.cognom1, ' ', ur.cognom2) as nomReceptor, t.total as total, tt.nom as nomTipusTransaccio ";
+       $select .= "FROM transaccio t ";
+       $select .= "LEFT JOIN tipus_transaccio tt ON tt.id = t.tipus ";
+       $select .= "LEFT JOIN esdeveniments e ON e.id = t.emisor ";
+       $select .= "LEFT JOIN usuaris ur ON ur.id = t.receptor ";
+       $select .= "WHERE t.receptor = '".$id."' AND t.tipus = '5' ";
+     
+        $r = $this->conn->query($select);
+        
+        if($r->num_rows > 0){
+            $cont = 0;
+            $json = '{"codi_error":"0","llistat":[';
+            while($rs = $r->fetch_assoc()){
+                $cont++;
+                if($cont!=1){ $json .= ","; }
+                $json .= '{"id":"'.$rs["idTransaccio"].'",'
+                        . '"data":"'.$rs["data"].'",'
+                        . '"nomEmisor":"'.$rs["nomEmisor"].'",'
+                        . '"nomReceptor":"'.$rs["nomReceptor"].'",'
+                        . '"total":"'.$rs["total"].'",'
+                        . '"tipus":"'.$rs["nomTipusTransaccio"].'"'
+                        .'}';
+            } 
+            $json .= ']}';
+            return $json;
+        }else{
+            return $this->e["103"];
+        }
+    }
     
 }
 

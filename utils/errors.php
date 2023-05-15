@@ -103,7 +103,11 @@ $errors = array(
     "97" => '{"codi_error":"esdeveniments_12","error":"', // missatge per excepció.
     "98" => '{"codi_error":"esdeveniments_13","error":"L\'id passat com a paràmetre no correspon amb cap esdeveniment."}',
     "99" => '{"codi_error":"esdeveniments_14","error":"Només pot modificar usuaris administradors."}',
-    "100" => '{"codi_error":"esdeveniments_15","error":"Falten paràmetres per poder donar d\'alta un esdeveniment. Recorda que com a mínim ha d\'haver: id, nom, descripció, valor, aforament, data, hora, població, imatge, actiu."}',
+    "100" => '{"codi_error":"esdeveniments_15","error":"Falten paràmetres per poder modificar un esdeveniment. Recorda que com a mínim ha d\'haver: id, nom, descripció, valor, aforament, data, hora, població, imatge, actiu."}',
+    "101" => '{"codi_error":"transaccions_1","error":"Només pot consultar un usuari administrador"}',
+    "102" => '{"codi_error":"transaccions_2","error":"Falta id per poder consultar les transaccions del usuari."}',
+    "103" => '{"codi_error":"transaccions_3","error":"El id passat no retorna cap registre."}',
+    
     
     "finalExcepcio" => '"}',
     

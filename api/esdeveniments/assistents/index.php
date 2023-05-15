@@ -17,7 +17,8 @@ switch($_SERVER["REQUEST_METHOD"]){
         if(isset($_POST["token"])){
             if($_POST["token"] == $db->getToken()){
                 
-                echo $db->llistatAssistents();
+                if(isset($_POST["id"])){ $id =  $_POST["id"]; }else{ $id = null; } 
+                echo $db->llistatAssistents($id);
                 
             }else{
                 echo $errors["66"];   
